@@ -1,0 +1,18 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      APP_URL: http://localhost:3000
+      AUTH_SECRET: ${AUTH_SECRET:-change-me}
+      DATABASE_URL: file:./data/workflow-os.db
+      XAI_API_KEY: ${XAI_API_KEY:-}
+      SEED_ON_BOOT: "true"
+    volumes:
+      - workflow-data:/app/data
+
+volumes:
+  workflow-data:
