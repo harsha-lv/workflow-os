@@ -122,7 +122,7 @@ export function AppShell({
               href="/dashboard"
               className={cn("truncate text-[13px] font-semibold tracking-tight", collapsed && "sr-only")}
             >
-              Workflow OS
+              FlowForge
             </Link>
             <Button
               variant="ghost"
@@ -206,7 +206,7 @@ export function AppShell({
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMenu((v) => !v)} aria-label="Open navigation">
               <Menu className="size-4" />
             </Button>
-            <button type="button" onClick={() => setOpen(true)} className="search-trigger md:max-w-xl">
+            <button type="button" onClick={() => setOpen(true)} className="search-trigger md:max-w-xl" aria-label="Search or jump to">
               <Search className="size-3.5" strokeWidth={1.75} />
               <span className="truncate">Search or jump to…</span>
               <span className="ml-auto hidden items-center gap-1 sm:inline-flex">

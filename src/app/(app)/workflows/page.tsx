@@ -38,15 +38,18 @@ export default async function WorkflowsPage() {
       {items.length === 0 ? (
         <div className="mt-5">
           <EmptyState
-            title="No workflows yet"
-            description="Build your first workflow from scratch, or start from a template that already has a path."
+            title="No workflows yet."
+            description="Describe what you want to automate and FlowForge can build your first workflow."
             action={
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button asChild>
-                  <Link href="/workflows/new">Create workflow</Link>
+                  <Link href="/workflows/new/ai">Build with AI</Link>
                 </Button>
                 <Button asChild variant="secondary">
                   <Link href="/templates">Browse templates</Link>
+                </Button>
+                <Button asChild variant="ghost">
+                  <Link href="/workflows/new">Start blank</Link>
                 </Button>
               </div>
             }

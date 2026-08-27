@@ -16,7 +16,10 @@ import { LiveRunContext } from "./live-run-context";
 import { VersionList } from "./versions";
 import { TestPanel } from "./test-panel";
 import { PublishDialog } from "./publish-dialog";
+import { ExplainPanel } from "./explain-panel";
+import { SetupGuide } from "./setup-guide";
 import { suggestWorkflow } from "@/domain/workflow/suggestions";
+import type { WorkflowStats } from "@/domain/workflow/stats";
 
 
 export function EditorShell({
@@ -25,12 +28,22 @@ export function EditorShell({
   description,
   graph,
   webhookToken,
+  webhookBaseUrl,
+  initialCopilot = false,
+  initialTest = false,
+  initialPublish = false,
+  initialSetup = false,
 }: {
   workflowId: string;
   name: string;
   description: string;
   graph: WorkflowGraph;
   webhookToken: string | null;
+  webhookBaseUrl: string;
+  initialCopilot?: boolean;
+  initialTest?: boolean;
+  initialPublish?: boolean;
+  initialSetup?: boolean;
 }) {
   const hydrate = useEditor((s) => s.hydrate);
   const editorName = useEditor((s) => s.name);
@@ -45,14 +58,18 @@ export function EditorShell({
   const select = useEditor((s) => s.select);
   const hydrated = useRef(false);
   const [picker, setPicker] = useState(false);
-  const [copilot, setCopilot] = useState(false);
+  const [copilot, setCopilot] = useState(initialCopilot);
   const [runId, setRunId] = useState<string | null>(null);
   const [runStatus, setRunStatus] = useState("idle");
   const [steps, setSteps] = useState<LiveStep[]>([]);
   const [startedAt, setStartedAt] = useState<string | null>(null);
   const [statuses, setStatuses] = useState<Record<string, string>>({});
-  const [testOpen, setTestOpen] = useState(false);
-  const [publishOpen, setPublishOpen] = useState(false);
+  const [testOpen, setTestOpen] = useState(initialTest);
+  const [publishOpen, setPublishOpen] = useState(initialPublish);
+  const [explainOpen, setExplainOpen] = useState(false);
+  const [explainText, setExplainText] = useState<string | null>(null);
+  const [explainStats, setExplainStats] = useState<WorkflowStats | null>(null);
+  const [setupOpen, setSetupOpen] = useState(initialSetup);
   const graphState = useEditor((s) => s.graph);
 
   useEffect(() => {
@@ -181,8 +198,10 @@ export function EditorShell({
 
   async function explain() {
     const res = await fetch(`/api/workflows/${workflowId}/explain`, { method: "POST", body: "{}" });
-    const data = (await res.json()) as { text?: string };
-    if (data.text) toast.message(data.text);
+    const data = (await res.json()) as { text?: string; stats?: WorkflowStats };
+    setExplainText(data.text ?? "Nothing to explain yet.");
+    setExplainStats(data.stats ?? null);
+    setExplainOpen(true);
   }
 
   return (
@@ -202,7 +221,7 @@ export function EditorShell({
               Build with AI
             </Button>
             <Button variant="ghost" size="sm" onClick={() => void explain()}>
-              Explain
+              ✨ Explain
             </Button>
             <Button variant="ghost" size="sm" onClick={undo} title="Undo ⌘Z">
               Undo
@@ -210,10 +229,10 @@ export function EditorShell({
             <Button variant="ghost" size="sm" onClick={redo} title="Redo ⇧⌘Z">
               Redo
             </Button>
-            <Button variant="ghost" size="sm" onClick={() => setTestOpen(true)} title="Test with sample input">
-              Test
+            <Button variant="secondary" size="sm" onClick={() => setTestOpen(true)} title="Test with sample input">
+              Test workflow
             </Button>
-            <Button variant="secondary" size="sm" onClick={() => void testRun()} title="Run (R)">
+            <Button variant="ghost" size="sm" onClick={() => void testRun()} title="Run (R)">
               Run
             </Button>
             <Button size="sm" onClick={() => setPublishOpen(true)}>
@@ -224,13 +243,14 @@ export function EditorShell({
         {webhookToken ? (
           <div className="flex items-center gap-2 border-b border-border bg-bg-elevated px-3 py-1 font-mono text-[11px] text-faint">
             <span className="truncate">
-              Webhook {typeof window === "undefined" ? webhookToken : `${window.location.origin}/api/webhooks/${webhookToken}`}
+              Webhook {`${webhookBaseUrl}/api/webhooks/${webhookToken}`}
             </span>
             <button
               type="button"
               className="text-muted hover:text-text"
+              aria-label="Copy webhook URL"
               onClick={async () => {
-                const url = `${window.location.origin}/api/webhooks/${webhookToken}`;
+                const url = `${webhookBaseUrl}/api/webhooks/${webhookToken}`;
                 await navigator.clipboard.writeText(url);
                 toast.success("Copied");
               }}
@@ -239,6 +259,12 @@ export function EditorShell({
             </button>
           </div>
         ) : null}
+        <SetupGuide
+          open={setupOpen}
+          onTest={() => setTestOpen(true)}
+          onPublish={() => setPublishOpen(true)}
+          onDismiss={() => setSetupOpen(false)}
+        />
         {suggestWorkflow(graphState).length ? (
           <div className="flex gap-3 overflow-x-auto border-b border-border bg-bg-elevated px-3 py-1.5 text-[12px] text-muted">
             {suggestWorkflow(graphState).slice(0, 2).map((item) => (
@@ -275,6 +301,12 @@ export function EditorShell({
             await publish();
             setPublishOpen(false);
           }}
+        />
+        <ExplainPanel
+          open={explainOpen}
+          text={explainText}
+          stats={explainStats}
+          onClose={() => setExplainOpen(false)}
         />
       </div>
     </LiveRunContext.Provider>

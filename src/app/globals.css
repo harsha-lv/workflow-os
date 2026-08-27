@@ -598,6 +598,15 @@ body {
   animation: pulse-dot 1.2s var(--ease) infinite;
 }
 
+@media (pointer: coarse) {
+  button,
+  a,
+  [role="button"],
+  .search-trigger {
+    min-height: 36px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     --duration-fast: 0ms;

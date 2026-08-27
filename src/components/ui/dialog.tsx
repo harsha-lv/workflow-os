@@ -28,7 +28,10 @@ export function DialogContent({
       >
         <div className="mb-4 flex items-start justify-between gap-4">
           <DialogPrimitive.Title className="text-base font-medium">{title}</DialogPrimitive.Title>
-          <DialogPrimitive.Close className="rounded-md p-1 text-muted transition-colors duration-[var(--duration-fast)] hover:bg-surface-hover hover:text-text">
+          <DialogPrimitive.Close
+            className="rounded-md p-1 text-muted transition-colors duration-[var(--duration-fast)] hover:bg-surface-hover hover:text-text"
+            aria-label="Close"
+          >
             <X className="size-4" />
           </DialogPrimitive.Close>
         </div>

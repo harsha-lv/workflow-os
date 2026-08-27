@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/ui/badge";
 import { PageHeader } from "@/components/ui/card";
 import { formatDateTime, formatDuration } from "@/lib/format";
 import { ExecutionInspector } from "@/components/execution/inspector";
+import { explainFailure } from "@/domain/ops/failure";
 
 export default async function RunDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requirePermission("executions.read");
@@ -21,6 +22,10 @@ export default async function RunDetailPage({ params }: { params: Promise<{ id: 
   const version = await db.query.workflowVersions.findFirst({
     where: eq(workflowVersions.id, run.workflowVersionId),
   });
+  const failedStep = steps.find((s) => s.nodeId === run.error?.nodeId);
+  const brief = run.error
+    ? explainFailure({ error: run.error, nodeName: failedStep?.name, nodeType: failedStep?.nodeType })
+    : null;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -29,13 +34,19 @@ export default async function RunDetailPage({ params }: { params: Promise<{ id: 
         description={`${run.triggerType} · ${formatDateTime(run.createdAt)} · ${formatDuration(run.durationMs)}`}
         actions={<StatusBadge status={run.status} />}
       />
-      {run.error ? (
+      {run.error && brief ? (
         <div className="mt-4 rounded-[var(--radius)] border border-danger/40 bg-[var(--danger-bg)] px-4 py-3 text-sm">
-          <p className="font-medium text-danger">{run.error.message}</p>
-          <p className="mt-1 text-xs text-muted">
-            {run.error.type}
-            {run.error.nodeId ? ` · node ${run.error.nodeId}` : ""}
-          </p>
+          <p className="font-medium text-danger">{brief.what}</p>
+          <p className="mt-1 text-muted">{brief.why}</p>
+          <p className="mt-2 text-[13px]">{brief.recommended}</p>
+          <details className="mt-2">
+            <summary className="cursor-pointer text-[12px] text-faint">View technical details</summary>
+            <p className="mt-1 font-mono text-[12px] text-muted">
+              {run.error.message}
+              {run.error.type ? ` · ${run.error.type}` : ""}
+              {run.error.nodeId ? ` · ${run.error.nodeId}` : ""}
+            </p>
+          </details>
         </div>
       ) : null}
       <ExecutionInspector

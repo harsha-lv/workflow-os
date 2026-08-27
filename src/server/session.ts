@@ -45,7 +45,7 @@ export async function writeSession(userId: string, orgId: string | null): Promis
   store.set(SESSION_COOKIE, createSessionToken(userId, orgId), {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.COOKIE_SECURE === "false" ? false : process.env.NODE_ENV === "production",
     path: "/",
     maxAge: TTL_MS / 1000,
   });

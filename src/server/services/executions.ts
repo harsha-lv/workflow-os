@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { ensureMigrated } from "@/db/client";
 import { approvals, executionSteps, executions, secrets, usageEvents, workflowVersions, workflows } from "@/db/schema";
 import { id } from "@/domain/ids";
@@ -9,6 +9,7 @@ import { decryptSecret } from "@/server/crypto";
 import { writeAudit } from "@/server/audit";
 import { validateGraph } from "@/domain/workflow/validate";
 import type { EngineStepResult } from "@/domain/engine/types";
+import { executeInlineOnEnqueue, publicAppUrl, workerLockTimeoutMs } from "@/server/config";
 
 export async function enqueueExecution(input: {
   orgId: string;
@@ -72,8 +73,18 @@ export async function enqueueExecution(input: {
   return executionId;
 }
 
+async function reclaimStaleLocks(): Promise<void> {
+  const db = await ensureMigrated();
+  const cutoff = new Date(Date.now() - workerLockTimeoutMs());
+  await db
+    .update(executions)
+    .set({ status: "queued", lockedAt: null, lockedBy: null })
+    .where(and(eq(executions.status, "running"), lt(executions.lockedAt, cutoff)));
+}
+
 export async function processQueuedExecutions(limit = 5): Promise<number> {
   const db = await ensureMigrated();
+  await reclaimStaleLocks();
   const workerId = `worker-${process.pid}`;
   const now = new Date();
   const queued = await db.query.executions.findMany({
@@ -88,14 +99,21 @@ export async function processQueuedExecutions(limit = 5): Promise<number> {
   const delayed = due.filter((row) => row.waitUntil && row.waitUntil.getTime() <= now.getTime());
   let processed = 0;
   for (const row of [...queued, ...delayed]) {
-    await db
+    const claimed = await db
       .update(executions)
       .set({ status: "running", lockedAt: now, lockedBy: workerId, startedAt: row.startedAt ?? now })
-      .where(eq(executions.id, row.id));
+      .where(and(eq(executions.id, row.id), or(eq(executions.status, "queued"), eq(executions.status, "waiting"))))
+      .returning({ id: executions.id });
+    if (claimed.length === 0) continue;
     await runPersistedExecution(row.id);
     processed += 1;
   }
   return processed;
+}
+
+export function kickExecution(executionId: string): void {
+  if (!executeInlineOnEnqueue()) return;
+  void runPersistedExecution(executionId);
 }
 
 export async function runPersistedExecution(executionId: string): Promise<void> {
@@ -174,11 +192,13 @@ export async function runPersistedExecution(executionId: string): Promise<void> 
     }
   };
 
+  const engineEnv = { APP_URL: publicAppUrl() };
   const result = execution.resumeFrom
     ? await resumeWorkflow({
         graph: version.definition.graph,
         trigger: execution.input,
         previousOutputs,
+        env: engineEnv,
         decision: {
           nodeId: execution.resumeFrom,
           output: previousOutputs[execution.resumeFrom] ?? execution.output,
@@ -200,6 +220,7 @@ export async function runPersistedExecution(executionId: string): Promise<void> 
     : await runWorkflow({
         graph: version.definition.graph,
         trigger: execution.input,
+        env: engineEnv,
         hooks: {
           secrets: async (name) => secretMap.get(name) ?? null,
           recordUsage: async (kind, quantity, metadata) => {

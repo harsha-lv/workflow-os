@@ -1,6 +1,6 @@
 # Database
 
-SQLite via libSQL for local development. The schema is relational with foreign keys and indexes, and is intended to move to Postgres without a rewrite of domain code.
+SQLite via libSQL for local development (`DATABASE_URL=file:./data/workflow-os.db`). PostgreSQL is required in production (`DATABASE_URL=postgres://...`). Both dialects share the same table names and application queries. Schema sources: `src/db/schema.sqlite.ts` and `src/db/schema.pg.ts`.
 
 Tables:
 
@@ -16,6 +16,8 @@ Tables:
 
 The editor's source of truth is `workflow_versions.definition` (JSON). Node and edge rows are a queryable projection written on save/publish.
 
-Apply schema: `ensureMigrated()` runs `CREATE TABLE IF NOT EXISTS` on boot.
+Apply schema: `npm run db:migrate` or `ensureMigrated()` on boot. SQLite uses `CREATE TABLE IF NOT EXISTS`. PostgreSQL uses the statements in `src/db/migrate.pg.ts` / `drizzle/pg/0000_init.sql`.
+
+Organizations have `is_demo` for the isolated FlowForge Demo workspace.
 
 Indexes cover org-scoped listing, webhook tokens, execution status, and audit time.

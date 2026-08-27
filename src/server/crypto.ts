@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
+import { authSecret, encryptionKeyMaterial } from "@/server/config";
 
 const SCRYPT_KEYLEN = 32;
 
@@ -18,7 +19,7 @@ export function verifyPassword(password: string, stored: string): boolean {
 }
 
 function secretKey(): Buffer {
-  const raw = process.env.ENCRYPTION_KEY || process.env.AUTH_SECRET || "dev-only-not-for-production";
+  const raw = encryptionKeyMaterial();
   if (/^[0-9a-fA-F]{64}$/.test(raw)) return Buffer.from(raw, "hex");
   return scryptSync(raw, "workflow-os-encryption", 32);
 }
@@ -40,7 +41,7 @@ export function decryptSecret(payload: string): string {
   return decrypted.toString("utf8");
 }
 
-export function sign(payload: string, secret = process.env.AUTH_SECRET ?? "dev-only-not-for-production"): string {
+export function sign(payload: string, secret = authSecret()): string {
   return createHmac("sha256", secret).update(payload).digest("hex");
 }
 

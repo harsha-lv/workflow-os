@@ -11,7 +11,8 @@ import { Panel, SectionLabel } from "@/components/ui/section";
 import { formatNumber, formatRelative } from "@/lib/format";
 import { PLAN_LIMITS, planOf, usagePercent } from "@/domain/billing/usage";
 import { attention } from "@/server/services/ops";
-import { DEMO_EMAIL } from "@/server/seed";
+import { getDemoEmail } from "@/server/config";
+import { QuickStart } from "@/components/start/quick-start";
 
 export default async function DashboardPage() {
   const ctx = await requireContext();
@@ -49,7 +50,7 @@ export default async function DashboardPage() {
     <div className="page-stack mx-auto max-w-6xl">
       <PageHeader
         title="Operations"
-        description={`${ctx.org.name} · live view of automations, failures, and approvals.${ctx.user.email === DEMO_EMAIL ? " Demo workspace — seeded Northstar Labs data." : ""}`}
+        description={`${ctx.org.name} · live view of automations, failures, and approvals.${ctx.org.isDemo || ctx.user.email === getDemoEmail() ? " FlowForge demo — seeded fixture data, not real customer records." : ""}`}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="secondary">
@@ -59,11 +60,13 @@ export default async function DashboardPage() {
               <Link href="/approvals">Approvals</Link>
             </Button>
             <Button asChild>
-              <Link href="/workflows/new">New workflow</Link>
+              <Link href="/workflows/new/ai">Build with AI</Link>
             </Button>
           </div>
         }
       />
+
+      <QuickStart empty={stats.workflowCount === 0} />
 
       <section className="panel mt-5 p-4">
         <SectionLabel>Attention required</SectionLabel>
@@ -159,6 +162,11 @@ export default async function DashboardPage() {
           </Link>
         </div>
         <Panel>
+          {recentWorkflows.length === 0 ? (
+            <p className="px-4 py-6 text-[13px] text-muted">
+              No workflows yet. Describe what you want to automate and FlowForge can build your first workflow.
+            </p>
+          ) : null}
           {recentWorkflows.map((wf) => (
             <Link
               key={wf.id}

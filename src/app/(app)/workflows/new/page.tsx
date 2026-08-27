@@ -45,9 +45,24 @@ export default async function NewWorkflowPage() {
 
   return (
     <div className="page-stack mx-auto max-w-5xl">
-      <PageHeader title="New workflow" description="Start from a blank canvas, or clone a path that already works." />
+      <PageHeader title="New workflow" description="Describe it with AI, start from a template, or build from scratch." />
 
-      <form action={createBlank} className="panel mt-5 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <Link
+        href="/workflows/new/ai"
+        className="panel mt-5 flex flex-col gap-3 p-5 transition-colors hover:bg-surface-hover sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div>
+          <p className="text-[13px] font-medium">Describe it with AI</p>
+          <p className="mt-1 text-[13px] text-muted">
+            Tell FlowForge what you want. Review the path, test it, then publish. Nothing is sent automatically.
+          </p>
+        </div>
+        <Button asChild>
+          <span>Build with AI</span>
+        </Button>
+      </Link>
+
+      <form action={createBlank} className="panel mt-3 flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[13px] font-medium">Create from scratch</p>
           <p className="mt-1 text-[13px] text-muted">Empty canvas with a trigger of your choice. Best when the path is yours.</p>

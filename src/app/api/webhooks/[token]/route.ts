@@ -2,9 +2,11 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { ensureMigrated } from "@/db/client";
 import { workflows } from "@/db/schema";
-import { enqueueExecution, runPersistedExecution } from "@/server/services/executions";
+import { enqueueExecution, kickExecution } from "@/server/services/executions";
 import { rateLimit, toErrorResponse } from "@/server/errors";
 import { NotFoundError } from "@/domain/permissions";
+
+const STRIP_HEADERS = new Set(["authorization", "cookie", "set-cookie", "x-api-key", "proxy-authorization"]);
 
 export async function POST(request: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
@@ -24,7 +26,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
     const query = Object.fromEntries(url.searchParams.entries());
     const headers: Record<string, string> = {};
     request.headers.forEach((value, key) => {
-      if (key.toLowerCase() === "authorization") return;
+      if (STRIP_HEADERS.has(key.toLowerCase())) return;
       headers[key] = value;
     });
     const executionId = await enqueueExecution({
@@ -34,7 +36,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ tok
       payload: { method: "POST", headers, query, body },
       version: "published",
     });
-    void runPersistedExecution(executionId);
+    kickExecution(executionId);
     return NextResponse.json({ id: executionId, status: "queued" });
   } catch (error) {
     return toErrorResponse(error);

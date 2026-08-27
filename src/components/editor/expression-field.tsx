@@ -24,18 +24,43 @@ export function ExpressionField({
 }) {
   const [open, setOpen] = useState(false);
   const suggestions = useMemo(() => {
-    const list = ["trigger", "vars", "env", "trigger.body", "trigger.body.email", "trigger.body.name", "trigger.body.company"];
+    const list: Array<{ path: string; label: string }> = [
+      { path: "trigger", label: "trigger" },
+      { path: "trigger.body", label: "trigger.body" },
+      { path: "trigger.body.email", label: "email" },
+      { path: "trigger.body.name", label: "name" },
+      { path: "trigger.body.company", label: "company" },
+    ];
     for (const node of nodes) {
-      list.push(`nodes.${node.id}`);
+      list.push({ path: `nodes.${node.id}`, label: node.name });
       const def = getNodeDefinition(node.type);
       const props = Object.keys(def?.outputSchema.properties ?? {});
-      for (const prop of props) list.push(`nodes.${node.id}.${prop}`);
+      for (const prop of props) list.push({ path: `nodes.${node.id}.${prop}`, label: `${node.name}.${prop}` });
     }
-    const fragment = value.split("{{").at(-1)?.replace(/\}.*/, "") ?? "";
+    const open = value.lastIndexOf("{{");
+    const close = value.lastIndexOf("}}");
+    const fragment = open > close ? value.slice(open + 2) : "";
     const needle = fragment.trim().toLowerCase();
     if (!needle) return list.slice(0, 12);
-    return list.filter((item) => item.toLowerCase().includes(needle)).slice(0, 12);
+    return list
+      .filter(
+        (item) =>
+          item.path.toLowerCase().startsWith(needle) ||
+          item.label.toLowerCase().includes(needle) ||
+          item.path.toLowerCase().includes(needle),
+      )
+      .slice(0, 12);
   }, [nodes, value]);
+
+  function applySuggestion(path: string) {
+    const open = value.lastIndexOf("{{");
+    const close = value.lastIndexOf("}}");
+    if (open === -1 || open < close) {
+      onChange(`${value}{{${path}}}`);
+      return;
+    }
+    onChange(`${value.slice(0, open)}{{${path}}}`);
+  }
   const refs = useMemo(() => {
     try {
       return collectExpressionRefs(value);
@@ -57,12 +82,13 @@ export function ExpressionField({
         <div className="mt-1 max-h-32 overflow-y-auto rounded-md border border-border bg-surface p-1">
           {suggestions.map((item) => (
             <button
-              key={item}
+              key={item.path}
               type="button"
-              className="block w-full rounded px-2 py-1 text-left font-mono text-[11px] hover:bg-surface-hover"
-              onClick={() => onChange(value.includes("{{") ? `${value}{{${item}}}` : `{{${item}}}`)}
+              className="flex w-full items-center justify-between rounded px-2 py-1 text-left font-mono text-[11px] hover:bg-surface-hover"
+              onClick={() => applySuggestion(item.path)}
             >
-              {item}
+              <span>{item.label}</span>
+              <span className="text-faint">{item.path}</span>
             </button>
           ))}
         </div>

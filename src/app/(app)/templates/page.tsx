@@ -4,6 +4,7 @@ import { requirePermission } from "@/server/context";
 import { PageHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { WorkflowPath } from "@/components/workflow/path";
+import { templateMeta } from "@/domain/templates/meta";
 
 export default async function TemplatesPage() {
   await requirePermission("workflows.read");
@@ -16,7 +17,9 @@ export default async function TemplatesPage() {
         description="Reusable workflow definitions. Using one creates a draft — it does not mutate the library."
       />
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        {tpls.map((tpl) => (
+        {tpls.map((tpl) => {
+          const meta = templateMeta(tpl.slug, tpl.definition.graph, tpl.description);
+          return (
           <Link
             key={tpl.id}
             href={`/templates/${tpl.slug}`}
@@ -26,12 +29,17 @@ export default async function TemplatesPage() {
               <h2 className="text-[13px] font-medium tracking-tight">{tpl.name}</h2>
               {tpl.featured ? <Badge tone="accent">Featured</Badge> : <Badge>{tpl.category}</Badge>}
             </div>
-            <p className="mt-1.5 line-clamp-2 text-[13px] text-muted">{tpl.description}</p>
+            <p className="mt-1.5 line-clamp-2 text-[13px] text-muted">{meta.whatItDoes}</p>
             <div className="mt-3">
               <WorkflowPath nodes={tpl.definition.graph.nodes} />
             </div>
+            <p className="mt-3 text-[11px] text-faint">
+              Setup ~{meta.setupMinutes} min
+              {meta.integrations.length ? ` · ${meta.integrations.join(" · ")}` : ""}
+            </p>
           </Link>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

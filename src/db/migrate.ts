@@ -17,6 +17,7 @@ const STATEMENTS = [
     name TEXT NOT NULL,
     slug TEXT NOT NULL,
     plan TEXT NOT NULL DEFAULT 'free',
+    is_demo INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
   )`,
@@ -81,6 +82,7 @@ const STATEMENTS = [
     disabled INTEGER NOT NULL DEFAULT 0
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS workflow_nodes_version_key_idx ON workflow_nodes(version_id, node_key)`,
+  `CREATE INDEX IF NOT EXISTS workflow_nodes_type_idx ON workflow_nodes(type)`,
   `CREATE TABLE IF NOT EXISTS workflow_edges (
     id TEXT PRIMARY KEY,
     version_id TEXT NOT NULL REFERENCES workflow_versions(id) ON DELETE CASCADE,
@@ -115,6 +117,7 @@ const STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS executions_org_created_idx ON executions(organization_id, created_at)`,
   `CREATE INDEX IF NOT EXISTS executions_workflow_idx ON executions(workflow_id)`,
   `CREATE INDEX IF NOT EXISTS executions_status_idx ON executions(status)`,
+  `CREATE INDEX IF NOT EXISTS executions_wait_idx ON executions(status, wait_until)`,
   `CREATE TABLE IF NOT EXISTS execution_steps (
     id TEXT PRIMARY KEY,
     execution_id TEXT NOT NULL REFERENCES executions(id) ON DELETE CASCADE,
@@ -151,6 +154,7 @@ const STATEMENTS = [
     created_at INTEGER NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS approvals_org_status_idx ON approvals(organization_id, status)`,
+  `CREATE INDEX IF NOT EXISTS approvals_execution_idx ON approvals(execution_id)`,
   `CREATE TABLE IF NOT EXISTS integrations (
     id TEXT PRIMARY KEY,
     organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -161,6 +165,7 @@ const STATEMENTS = [
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
   )`,
+  `CREATE INDEX IF NOT EXISTS integrations_org_idx ON integrations(organization_id)`,
   `CREATE TABLE IF NOT EXISTS secrets (
     id TEXT PRIMARY KEY,
     organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -194,6 +199,7 @@ const STATEMENTS = [
     created_at INTEGER NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS audit_org_created_idx ON audit_logs(organization_id, created_at)`,
+  `CREATE INDEX IF NOT EXISTS audit_action_idx ON audit_logs(action)`,
   `CREATE TABLE IF NOT EXISTS usage_events (
     id TEXT PRIMARY KEY,
     organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -203,6 +209,7 @@ const STATEMENTS = [
     created_at INTEGER NOT NULL
   )`,
   `CREATE INDEX IF NOT EXISTS usage_org_kind_idx ON usage_events(organization_id, kind)`,
+  `CREATE INDEX IF NOT EXISTS usage_org_created_idx ON usage_events(organization_id, created_at)`,
 ];
 
 export async function applySchema(client: Client): Promise<void> {
@@ -210,5 +217,12 @@ export async function applySchema(client: Client): Promise<void> {
   await client.execute("PRAGMA journal_mode = WAL");
   for (const statement of STATEMENTS) {
     await client.execute(statement);
+  }
+  try {
+    await client.execute(
+      "ALTER TABLE organizations ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0",
+    );
+  } catch {
+    // Column already exists on databases created after this patch.
   }
 }

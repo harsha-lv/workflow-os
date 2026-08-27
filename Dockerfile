@@ -8,15 +8,20 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
 RUN npm run build
 
 FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV ENABLE_EMBEDDED_WORKER=false
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY --from=builder /app/drizzle ./drizzle
 EXPOSE 3000
 CMD ["npm", "start"]

@@ -15,6 +15,9 @@ export default async function OnboardingPage() {
     const db = await ensureMigrated();
     await db.update(users).set({ onboardedAt: new Date() }).where(eq(users.id, session.user.id));
     const choice = String(formData.get("choice"));
+    if (choice === "ai") {
+      redirect("/workflows/new/ai");
+    }
     if (choice === "blank") {
       const id = await createWorkflow({
         orgId: session.org.id,
@@ -38,18 +41,24 @@ export default async function OnboardingPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6">
       <p className="text-xs uppercase tracking-[0.18em] text-accent">Getting started</p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Six minutes to a working automation</h1>
+      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Build, run, and monitor intelligent workflows</h1>
+      <p className="mt-2 text-sm text-muted">
+        Workspace ready: {ctx.org.name}. Describe what you want, start from a template, or skip — you can come back.
+      </p>
       <ol className="mt-6 grid gap-2 text-sm text-muted">
-        <li>1. Create a workspace — done ({ctx.org.name})</li>
-        <li>2. Create a first workflow</li>
-        <li>3. Choose a template or a blank canvas</li>
-        <li>4. Connect a couple of nodes</li>
-        <li>5. Test a run</li>
-        <li>6. Publish the version executions will use</li>
+        <li>1. Create a workflow</li>
+        <li>2. Choose AI, a template, or a blank canvas</li>
+        <li>3. Configure only what you need</li>
+        <li>4. Test with sample data</li>
+        <li>5. Publish when you are ready</li>
+        <li>6. Watch the execution</li>
       </ol>
       <form action={start} className="mt-8 grid gap-2">
-        <Button name="choice" value="template">
-          Start from lead qualification
+        <Button name="choice" value="ai">
+          Describe it with AI
+        </Button>
+        <Button name="choice" value="template" variant="secondary">
+          Start from a template
         </Button>
         <Button name="choice" value="blank" variant="secondary">
           Start blank

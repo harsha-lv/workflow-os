@@ -1,5 +1,6 @@
 import { processQueuedExecutions } from "@/server/services/executions";
 import { ensureMigrated } from "@/db/client";
+import { isProduction, seedOnBootEnabled } from "@/server/config";
 import { maybeSeed } from "@/server/seed";
 
 let timer: ReturnType<typeof setInterval> | null = null;
@@ -10,7 +11,7 @@ export async function tickWorker(): Promise<number> {
   running = true;
   try {
     await ensureMigrated();
-    await maybeSeed();
+    if (seedOnBootEnabled()) await maybeSeed();
     return await processQueuedExecutions(4);
   } catch (error) {
     console.error("[worker]", error);
@@ -22,11 +23,11 @@ export async function tickWorker(): Promise<number> {
 
 export function startWorker(): void {
   if (timer) return;
-  const ms = Number(process.env.WORKER_POLL_MS ?? 750);
+  const ms = Number(process.env.WORKER_POLL_MS ?? (isProduction() ? 1000 : 750));
   void tickWorker();
   timer = setInterval(() => {
     void tickWorker();
-  }, Number.isFinite(ms) ? ms : 750);
+  }, Number.isFinite(ms) ? ms : 1000);
 }
 
 export function stopWorker(): void {

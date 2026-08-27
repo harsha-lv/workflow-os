@@ -2,7 +2,7 @@
   "name": "workflow-os",
   "version": "0.1.0",
   "private": true,
-  "description": "AI-native workflow automation platform",
+  "description": "AI-native workflow automation and orchestration platform",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -13,7 +13,10 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "worker": "tsx src/scripts/worker.ts",
-    "seed": "tsx src/scripts/seed.ts"
+    "worker:check": "tsx src/scripts/worker.ts --check",
+    "seed": "tsx src/scripts/seed.ts",
+    "seed:demo": "tsx src/scripts/seed-demo.ts",
+    "db:migrate": "tsx src/scripts/migrate.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
@@ -40,11 +43,13 @@
     "nanoid": "^5.1.16",
     "next": "16.3.2",
     "openai": "^7.5.0",
+    "postgres": "^3.4.7",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "server-only": "^0.0.1",
     "sonner": "^2.0.8",
     "tailwind-merge": "^3.6.0",
+    "tsx": "^4.23.12",
     "zod": "^4.4.3",
     "zustand": "^5.0.15"
   },
@@ -59,7 +64,6 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.2",
     "tailwindcss": "^4",
-    "tsx": "^4.23.12",
     "typescript": "^5",
     "vitest": "^4.1.11"
   }

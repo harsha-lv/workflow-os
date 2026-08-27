@@ -4,12 +4,13 @@ import { z } from "zod";
 import { ensureMigrated } from "@/db/client";
 import { memberships, organizations, projects, users } from "@/db/schema";
 import { id } from "@/domain/ids";
-import { ConflictError } from "@/domain/permissions";
+import { AuthorizationError, ConflictError } from "@/domain/permissions";
 import { hashPassword } from "@/server/crypto";
 import { rateLimit, toErrorResponse } from "@/server/errors";
 import { writeSession } from "@/server/session";
 import { slugify } from "@/lib/utils";
 import { maybeSeed, seedTemplates } from "@/server/seed";
+import { publicSignupEnabled } from "@/server/config";
 
 const schema = z.object({
   name: z.string().min(2).max(80),
@@ -21,6 +22,9 @@ const schema = z.object({
 export async function POST(request: Request) {
   try {
     rateLimit(`signup:${request.headers.get("x-forwarded-for") ?? "local"}`, 8, 60_000);
+    if (!publicSignupEnabled()) {
+      throw new AuthorizationError("Public signup is disabled. Use the demo account provided by the operator.");
+    }
     await ensureMigrated();
     await maybeSeed();
     await seedTemplates();

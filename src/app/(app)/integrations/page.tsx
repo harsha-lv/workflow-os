@@ -34,6 +34,12 @@ export default async function IntegrationsPage() {
       </div>
       <h2 className="section-label mt-6">Workspace adapters</h2>
       <div className="panel mt-2 divide-y divide-border">
+        {rows.length === 0 ? (
+          <p className="px-3.5 py-6 text-[13px] text-muted">
+            No workspace adapters yet. SpaceXAI is configured from the server key. Slack and GitHub can be added later
+            without rewriting workflows.
+          </p>
+        ) : null}
         {rows.map((row) => (
           <div key={row.id} className="flex items-center justify-between px-3.5 py-3">
             <div>

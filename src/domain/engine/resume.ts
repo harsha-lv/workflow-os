@@ -6,6 +6,7 @@ export async function resumeWorkflow(input: {
   graph: WorkflowGraph;
   trigger: unknown;
   variables?: Record<string, unknown>;
+  env?: Record<string, string>;
   previousOutputs: Record<string, unknown>;
   decision: { nodeId: string; branch?: string; output: unknown };
   hooks?: EngineHooks;
@@ -14,6 +15,7 @@ export async function resumeWorkflow(input: {
     graph: input.graph,
     trigger: input.trigger,
     variables: input.variables,
+    env: input.env,
     hooks: {
       ...input.hooks,
       previousOutputs: input.previousOutputs,

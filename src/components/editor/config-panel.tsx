@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { getNodeDefinition } from "@/domain/nodes/definitions";
 import { Field, Input, Textarea } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ export function ConfigPanel({ onTest }: { onTest?: () => void }) {
   const updateNode = useEditor((s) => s.updateNode);
   const updateConfig = useEditor((s) => s.updateConfig);
   const issues = useEditor((s) => s.issues);
+  const [mode, setMode] = useState<"simple" | "advanced">("simple");
+  const [insertOpen, setInsertOpen] = useState(false);
   const node = graph.nodes.find((n) => n.id === selected[0]);
   if (!node) {
     return (
@@ -41,6 +44,7 @@ export function ConfigPanel({ onTest }: { onTest?: () => void }) {
   const basic = def?.configFields.filter((f) => !f.advanced) ?? [];
   const advanced = def?.configFields.filter((f) => f.advanced) ?? [];
   const nodeIssues = issues.filter((i) => i.nodeId === node.id);
+  const guide = guideFor(def?.type ?? node.type);
 
   function setField(key: string, value: unknown) {
     updateConfig(node!.id, { ...node!.config, [key]: value });
@@ -53,24 +57,39 @@ export function ConfigPanel({ onTest }: { onTest?: () => void }) {
         <Input value={node.name} onChange={(e) => updateNode(node.id, { name: e.target.value })} />
       </Field>
       <p className="mt-3 text-[13px] text-muted">{def?.description}</p>
-      {def ? (
-        <details className="mt-2">
-          <summary className="cursor-pointer text-[12px] text-faint">What does this do?</summary>
-          <div className="mt-2 grid gap-1 text-[12px] text-muted">
-            <p>{def.docs}</p>
-            <p>
-              <span className="text-faint">Example · </span>
-              {guideFor(def.type).example}
-            </p>
-            <p>
-              <span className="text-faint">Watch for · </span>
-              {guideFor(def.type).mistakes[0]}
-            </p>
-          </div>
-        </details>
-      ) : null}
+      <div className="mt-3 rounded-md border border-border bg-bg-sunken p-2.5 text-[12px] text-muted">
+        <p>{def?.docs ?? "Configure this step, then test the workflow."}</p>
+        <p className="mt-2">
+          <span className="text-faint">Example · </span>
+          {guide.example}
+        </p>
+        <p className="mt-1">
+          <span className="text-faint">Common mistake · </span>
+          {guide.mistakes[0]}
+        </p>
+      </div>
+      <div className="mt-3 flex gap-1 rounded-md border border-border p-0.5" role="tablist" aria-label="Inspector mode">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "simple"}
+          className={`flex-1 rounded px-2 py-1 text-[12px] ${mode === "simple" ? "bg-surface-hover text-text" : "text-muted"}`}
+          onClick={() => setMode("simple")}
+        >
+          Simple
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === "advanced"}
+          className={`flex-1 rounded px-2 py-1 text-[12px] ${mode === "advanced" ? "bg-surface-hover text-text" : "text-muted"}`}
+          onClick={() => setMode("advanced")}
+        >
+          Advanced
+        </button>
+      </div>
       <div className="mt-4 grid gap-3">
-        {basic.map((field) => (
+        {(mode === "simple" ? basic : [...basic, ...advanced]).map((field) => (
           <ConfigField
             key={field.key}
             field={field}
@@ -81,23 +100,6 @@ export function ConfigPanel({ onTest }: { onTest?: () => void }) {
           />
         ))}
       </div>
-      {advanced.length ? (
-        <details className="mt-4">
-          <summary className="cursor-pointer text-xs text-muted">Advanced</summary>
-          <div className="mt-3 grid gap-3">
-            {advanced.map((field) => (
-              <ConfigField
-                key={field.key}
-                field={field}
-                value={node.config[field.key]}
-                onChange={(v) => setField(field.key, v)}
-                graph={graph}
-                currentId={node.id}
-              />
-            ))}
-          </div>
-        </details>
-      ) : null}
       {nodeIssues.length ? (
         <ul className="mt-4 grid gap-1 text-xs text-danger">
           {nodeIssues.map((issue, i) => (
@@ -105,21 +107,27 @@ export function ConfigPanel({ onTest }: { onTest?: () => void }) {
           ))}
         </ul>
       ) : null}
-      <p className="mt-4 text-xs text-faint">{def?.docs}</p>
-      <DataTree
-        nodes={graph.nodes}
-        currentId={node.id}
-        onInsert={(expr) => {
-          const current = node.config;
-          const key = def?.configFields.find((f) => f.type === "expression" || f.type === "text")?.key;
-          if (!key) return;
-          const prev = current[key];
-          updateConfig(node.id, { ...current, [key]: `${typeof prev === "string" ? prev : ""}${expr}` });
-        }}
-      />
+      <div className="mt-4">
+        <Button type="button" variant="secondary" size="sm" onClick={() => setInsertOpen((v) => !v)}>
+          Insert data
+        </Button>
+        {insertOpen ? (
+          <DataTree
+            nodes={graph.nodes}
+            currentId={node.id}
+            onInsert={(expr) => {
+              const current = node.config;
+              const key = def?.configFields.find((f) => f.type === "expression" || f.type === "text")?.key;
+              if (!key) return;
+              const prev = current[key];
+              updateConfig(node.id, { ...current, [key]: `${typeof prev === "string" ? prev : ""}${expr}` });
+            }}
+          />
+        ) : null}
+      </div>
       {onTest && def && !def.isTrigger ? (
         <Button variant="secondary" size="sm" className="mt-4" onClick={onTest}>
-          Run workflow
+          Test workflow
         </Button>
       ) : null}
     </aside>

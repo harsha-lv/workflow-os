@@ -118,8 +118,8 @@ export const nodeDefinitions: NodeDefinition[] = [
         { value: "anthropic", label: "Anthropic" },
         { value: "gemini", label: "Gemini" },
         { value: "mock", label: "Mock" },
-      ], default: "xai" },
-      { key: "model", label: "Model", type: "model", default: "grok-4.6" },
+      ], default: "xai", advanced: true },
+      { key: "model", label: "Model", type: "model", default: "grok-4.6", advanced: true },
       { key: "system", label: "System", type: "text", placeholder: "You are a precise operations assistant." },
       { key: "prompt", label: "Prompt", type: "expression", required: true, placeholder: "Write a reply for {{trigger.body.name}}" },
       { key: "temperature", label: "Temperature", type: "number", default: 0.2, advanced: true },
@@ -150,8 +150,8 @@ export const nodeDefinitions: NodeDefinition[] = [
       { key: "provider", label: "Provider", type: "select", default: "xai", options: [
         { value: "xai", label: "SpaceXAI" },
         { value: "mock", label: "Mock" },
-      ] },
-      { key: "model", label: "Model", type: "model", default: "grok-4.6" },
+      ], advanced: true },
+      { key: "model", label: "Model", type: "model", default: "grok-4.6", advanced: true },
       {
         key: "labels",
         label: "Labels",
@@ -185,8 +185,8 @@ export const nodeDefinitions: NodeDefinition[] = [
       { key: "provider", label: "Provider", type: "select", default: "xai", options: [
         { value: "xai", label: "SpaceXAI" },
         { value: "mock", label: "Mock" },
-      ] },
-      { key: "model", label: "Model", type: "model", default: "grok-4.6" },
+      ], advanced: true },
+      { key: "model", label: "Model", type: "model", default: "grok-4.6", advanced: true },
       { key: "input", label: "Source", type: "expression", required: true, placeholder: "{{trigger.body}}" },
       {
         key: "schema",
@@ -212,8 +212,8 @@ export const nodeDefinitions: NodeDefinition[] = [
       { key: "provider", label: "Provider", type: "select", default: "xai", options: [
         { value: "xai", label: "SpaceXAI" },
         { value: "mock", label: "Mock" },
-      ] },
-      { key: "model", label: "Model", type: "model", default: "grok-4.6" },
+      ], advanced: true },
+      { key: "model", label: "Model", type: "model", default: "grok-4.6", advanced: true },
       { key: "input", label: "Source", type: "expression", required: true },
       { key: "style", label: "Style", type: "select", default: "bullets", options: [
         { value: "bullets", label: "Bullets" },
@@ -244,8 +244,8 @@ export const nodeDefinitions: NodeDefinition[] = [
       { key: "provider", label: "Provider", type: "select", default: "xai", options: [
         { value: "xai", label: "SpaceXAI" },
         { value: "mock", label: "Mock" },
-      ] },
-      { key: "model", label: "Model", type: "model", default: "grok-4.6" },
+      ], advanced: true },
+      { key: "model", label: "Model", type: "model", default: "grok-4.6", advanced: true },
       { key: "goal", label: "Goal", type: "expression", required: true },
       { key: "context", label: "Context", type: "expression" },
     ],

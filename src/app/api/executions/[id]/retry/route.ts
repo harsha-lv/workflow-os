@@ -5,7 +5,7 @@ import { executionSteps, executions } from "@/db/schema";
 import { requirePermission } from "@/server/context";
 import { toErrorResponse } from "@/server/errors";
 import { NotFoundError } from "@/domain/permissions";
-import { runPersistedExecution } from "@/server/services/executions";
+import { kickExecution } from "@/server/services/executions";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -35,8 +35,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         lockedBy: null,
       })
       .where(eq(executions.id, run.id));
-    void runPersistedExecution(run.id);
-    return NextResponse.json({ id: run.id, fromNodeId: fromNodeId ?? null });
+    kickExecution(run.id);
+    return NextResponse.json({ id: run.id, fromNodeId: fromNodeId ?? null, status: "queued" });
   } catch (error) {
     return toErrorResponse(error);
   }

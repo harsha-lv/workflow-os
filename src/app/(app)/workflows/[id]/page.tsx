@@ -3,14 +3,18 @@ import { requirePermission } from "@/server/context";
 import { getWorkflow } from "@/server/services/workflows";
 import { EditorShell } from "@/components/editor/editor-shell";
 import { emptyGraph } from "@/domain/graph";
+import { publicAppUrl } from "@/server/config";
 
 export default async function WorkflowEditorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ ai?: string; test?: string; publish?: string; setup?: string }>;
 }) {
   const ctx = await requirePermission("workflows.write");
   const { id } = await params;
+  const query = await searchParams;
   let workflow;
   let draft;
   try {
@@ -27,6 +31,11 @@ export default async function WorkflowEditorPage({
       description={workflow.description}
       graph={draft?.definition.graph ?? emptyGraph()}
       webhookToken={workflow.webhookToken}
+      webhookBaseUrl={publicAppUrl()}
+      initialCopilot={query.ai === "1"}
+      initialTest={query.test === "1"}
+      initialPublish={query.publish === "1"}
+      initialSetup={Boolean(query.setup)}
     />
   );
 }

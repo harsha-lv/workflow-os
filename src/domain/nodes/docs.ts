@@ -36,6 +36,26 @@ export const nodeGuides: Record<string, NodeGuide> = {
     example: "to: {{nodes.extract.email}} — queues outbound mail; connect a provider to deliver.",
     mistakes: ["Empty recipient.", "Sending before human approval on customer-facing copy."],
   },
+  "ai.summarizer": {
+    example: "Input {{trigger.body.message}}. Output is a short summary you can notify or log.",
+    mistakes: ["Summarizing an empty body.", "Expecting the original email instead of nodes.<id>.summary."],
+  },
+  "ai.extractor": {
+    example: "Schema { name, email, company }. Read nodes.<id>.email downstream.",
+    mistakes: ["Referencing a field that is not in the schema."],
+  },
+  "ai.agent": {
+    example: "Goal: {{trigger.question}}. The result is nodes.<id>.result.",
+    mistakes: ["Leaving the goal blank."],
+  },
+  "comm.notification": {
+    example: "Title and message appear in the workspace. No external send until a provider is connected.",
+    mistakes: ["Assuming Slack is connected when the adapter is still disconnected."],
+  },
+  "output.log": {
+    example: "Writes a message into the run inspector. Safe for tests.",
+    mistakes: ["Using a log node as if it sent an email."],
+  },
 };
 
 export function guideFor(type: string): NodeGuide {

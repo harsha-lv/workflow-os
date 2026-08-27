@@ -14,7 +14,7 @@ import { maybeSeed } from "@/server/seed";
 
 export type RequestContext = {
   user: { id: string; email: string; name: string; onboardedAt: Date | null };
-  org: { id: string; name: string; slug: string; plan: string };
+  org: { id: string; name: string; slug: string; plan: string; isDemo: boolean };
   role: MembershipRole;
 };
 
@@ -37,7 +37,7 @@ export async function getContext(): Promise<RequestContext | null> {
     if (!org) return null;
     return {
       user: { id: user.id, email: user.email, name: user.name, onboardedAt: user.onboardedAt },
-      org: { id: org.id, name: org.name, slug: org.slug, plan: org.plan },
+      org: { id: org.id, name: org.name, slug: org.slug, plan: org.plan, isDemo: Boolean(org.isDemo) },
       role: membership.role as MembershipRole,
     };
   }
@@ -51,7 +51,7 @@ export async function getContext(): Promise<RequestContext | null> {
   if (!org) throw new NotFoundError("Workspace not found");
   return {
     user: { id: user.id, email: user.email, name: user.name, onboardedAt: user.onboardedAt },
-    org: { id: org.id, name: org.name, slug: org.slug, plan: org.plan },
+    org: { id: org.id, name: org.name, slug: org.slug, plan: org.plan, isDemo: Boolean(org.isDemo) },
     role: membership.role as MembershipRole,
   };
 }

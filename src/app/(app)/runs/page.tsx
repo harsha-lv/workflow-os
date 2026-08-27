@@ -4,6 +4,7 @@ import { ensureMigrated } from "@/db/client";
 import { executions, workflows } from "@/db/schema";
 import { requirePermission } from "@/server/context";
 import { EmptyState, PageHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/badge";
 import { formatDuration, formatRelative } from "@/lib/format";
 
@@ -32,8 +33,13 @@ export default async function RunsPage({
       {rows.length === 0 ? (
         <div className="mt-5">
           <EmptyState
-            title="No executions yet"
-            description="Run your workflow from the editor to see history here. Test runs are labeled so they stay separate from production."
+            title="No executions yet."
+            description="Test a workflow from the editor. Test runs stay labeled so they never mix with production."
+            action={
+              <Button asChild>
+                <Link href="/workflows">Open workflows</Link>
+              </Button>
+            }
           />
         </div>
       ) : (

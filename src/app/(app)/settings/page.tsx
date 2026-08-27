@@ -36,7 +36,7 @@ export default async function SettingsPage() {
       <section className="mt-6">
         <h2 className="section-label">Notifications</h2>
         <p className="mt-2 text-[13px] text-muted">
-          Workflow OS only surfaces failures, repeated incidents, pending approvals, and paused production workflows.
+          FlowForge only surfaces failures, repeated incidents, pending approvals, and paused production workflows.
           It does not notify on every successful run.
         </p>
       </section>

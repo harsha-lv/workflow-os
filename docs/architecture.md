@@ -1,13 +1,13 @@
 # Architecture
 
-Workflow OS is a single Next.js application with a hard internal split:
+FlowForge is a single Next.js application with a hard internal split:
 
 ```
 src/
   app/          HTTP + pages
   components/   UI
   domain/       pure logic (nodes, engine, expressions, authz, billing)
-  db/           schema + migrations
+  db/           SQLite + PostgreSQL schema and migrations
   server/       sessions, services, worker, seed
 ```
 
@@ -25,4 +25,4 @@ Authorization is checked in `requirePermission` on the server. Frontend hiding i
 - Expressions are parsed and evaluated without `eval` or `Function`.
 - Secrets are encrypted at rest and resolved only inside handlers.
 - AI calls go through `AIProvider`. SpaceXAI is the default live provider. Missing keys use a mock that labels its output `mocked: true`.
-- Execution is independent of the request that enqueued it. `runPersistedExecution` can be called from an API route (local DX) or from `npm run worker`.
+- Execution is independent of the request that enqueued it. Local development may run a claimed execution inline; production enqueues and `npm run worker` claims the row.

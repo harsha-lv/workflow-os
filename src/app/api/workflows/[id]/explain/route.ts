@@ -19,19 +19,21 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ text: explainNode(node.type, node.name) });
     }
     const baseline = explainGraph(graph);
+    const { graphStats } = await import("@/domain/workflow/stats");
+    const stats = graphStats(graph);
     const provider = defaultProvider(envProviderConfig());
-    if (provider.id === "mock") return NextResponse.json({ text: baseline, mocked: true });
+    if (provider.id === "mock") return NextResponse.json({ text: baseline, stats, mocked: true });
     const result = await provider.complete({
       model: "grok-4.6",
       messages: [
         {
           role: "system",
-          content: "Explain this workflow in two sentences for an operations lead. No marketing language.",
+          content: "Explain this workflow in two sentences for an operations lead. No marketing language. Do not invent steps that are not in the JSON.",
         },
         { role: "user", content: JSON.stringify({ name: workflow.name, nodes: graph.nodes.map((n) => ({ type: n.type, name: n.name })) }) },
       ],
     });
-    return NextResponse.json({ text: result.text || baseline, mocked: result.mocked ?? false });
+    return NextResponse.json({ text: result.text || baseline, stats, mocked: result.mocked ?? false });
   } catch (error) {
     return toErrorResponse(error);
   }

@@ -30,8 +30,8 @@ export default async function ApprovalsPage() {
       decision,
       comment,
     });
-    const { runPersistedExecution } = await import("@/server/services/executions");
-    await runPersistedExecution(executionId);
+    const { kickExecution } = await import("@/server/services/executions");
+    kickExecution(executionId);
     revalidatePath("/approvals");
     revalidatePath("/runs");
   }
@@ -45,8 +45,8 @@ export default async function ApprovalsPage() {
       {rows.length === 0 ? (
         <div className="mt-5">
           <EmptyState
-            title="Nothing waiting on you"
-            description="When a workflow hits a Human Approval or Review node, it will pause and appear here — including on mobile."
+            title="Nothing waiting on you."
+            description="When a workflow pauses for a person, it appears here — including on a phone. You can approve, reject, or ask for changes."
           />
         </div>
       ) : (

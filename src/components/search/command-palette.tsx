@@ -19,6 +19,8 @@ const GROUPS: Array<{ type: string; label: string }> = [
   { type: "template", label: "Templates" },
   { type: "execution", label: "Runs" },
   { type: "project", label: "Projects" },
+  { type: "integration", label: "Integrations" },
+  { type: "approval", label: "Approvals" },
   { type: "audit", label: "Audit" },
 ];
 
@@ -76,7 +78,7 @@ export function CommandPalette({
             autoFocus
             value={q}
             onValueChange={setQ}
-            placeholder="Search workflows, runs, templates…"
+            placeholder="Search workflows, runs, templates, approvals…"
             className="h-11 w-full bg-transparent px-3.5 text-[13px] outline-none"
           />
           <Kbd className="mr-3">esc</Kbd>

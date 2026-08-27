@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requirePermission } from "@/server/context";
 import { toErrorResponse } from "@/server/errors";
-import { enqueueExecution, runPersistedExecution } from "@/server/services/executions";
+import { enqueueExecution, kickExecution } from "@/server/services/executions";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -21,10 +21,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       payload: body.input ?? { source: triggerType },
       version: body.version ?? "published",
     });
-    // Kick the run immediately so local usage does not wait for the poller,
-    // while still leaving the worker as the production path.
-    void runPersistedExecution(executionId);
-    return NextResponse.json({ id: executionId });
+    kickExecution(executionId);
+    return NextResponse.json({ id: executionId, status: "queued" });
   } catch (error) {
     return toErrorResponse(error);
   }

@@ -18,12 +18,19 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  applicationName: "FlowForge",
   title: {
-    default: "Workflow OS",
-    template: "%s · Workflow OS",
+    default: "FlowForge",
+    template: "%s · FlowForge",
   },
-  description: "AI-native workflow automation for teams that need to see what happened.",
+  description: "AI-native workflow automation and orchestration platform.",
   icons: { icon: "/favicon.svg" },
+  openGraph: {
+    title: "FlowForge",
+    description: "AI-native workflow automation and orchestration platform.",
+    siteName: "FlowForge",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

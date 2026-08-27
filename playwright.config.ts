@@ -23,6 +23,8 @@ export default defineConfig({
       AUTH_SECRET: "e2e-auth-secret-e2e-auth-secret-e2e-auth-secret",
       SEED_ON_BOOT: "true",
       NODE_ENV: "development",
+      DEMO_EMAIL: "maya.chen@northstar.example",
+      DEMO_PASSWORD: "workflow-os-demo",
     },
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],

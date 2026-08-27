@@ -3,25 +3,25 @@ import type { WorkflowGraph } from "../graph";
 
 const SAMPLES = [
   {
-    name: "Alex Rivera",
-    email: "alex.rivera@harbor.app",
-    company: "Harbor",
-    title: "VP Operations",
-    message: "Evaluating automation for inbound qualification this quarter.",
+    name: "Demo Lead Alpha",
+    email: "lead-alpha@demo.example",
+    company: "Demo Manufacturing Co",
+    title: "Director of Operations (fixture)",
+    message: "[Demo fixture] Evaluating automation for inbound qualification this quarter.",
   },
   {
-    name: "Priya Shah",
-    email: "priya.shah@northstar.example",
-    company: "Northstar Labs",
-    title: "Head of Support",
-    message: "SSO started failing after the IdP rotation.",
+    name: "Demo Lead Beta",
+    email: "lead-beta@demo.example",
+    company: "Harbor Systems (demo fixture)",
+    title: "Head of Support (fixture)",
+    message: "[Demo fixture] SSO started failing after the IdP rotation.",
   },
   {
-    name: "Samir Patel",
-    email: "samir@fieldwork.io",
-    company: "Fieldwork",
-    title: "Head of Growth",
-    message: "Need human approval on AI-drafted outreach before it sends.",
+    name: "Demo Lead Gamma",
+    email: "lead-gamma@demo.example",
+    company: "Fieldwork Labs (demo fixture)",
+    title: "Head of Growth (fixture)",
+    message: "[Demo fixture] Need human approval on AI-drafted outreach before it sends.",
   },
 ];
 

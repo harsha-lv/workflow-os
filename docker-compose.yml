@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: workflow
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-workflow}
+      POSTGRES_DB: workflow_os
+    ports:
+      - "5432:5432"
+    volumes:
+      - workflow-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U workflow -d workflow_os"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   web:
     build:
       context: .
@@ -6,13 +22,39 @@ services:
     ports:
       - "3000:3000"
     environment:
-      APP_URL: http://localhost:3000
-      AUTH_SECRET: ${AUTH_SECRET:-change-me}
-      DATABASE_URL: file:./data/workflow-os.db
+      NODE_ENV: production
+      APP_URL: ${APP_URL:?Set APP_URL to the public origin, e.g. https://flowforge.example.com}
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY is required}
+      DATABASE_URL: postgres://workflow:${POSTGRES_PASSWORD:-workflow}@db:5432/workflow_os
       XAI_API_KEY: ${XAI_API_KEY:-}
-      SEED_ON_BOOT: "true"
-    volumes:
-      - workflow-data:/app/data
+      DEMO_EMAIL: ${DEMO_EMAIL:-}
+      DEMO_PASSWORD: ${DEMO_PASSWORD:-}
+      SEED_ON_BOOT: "false"
+      ENABLE_EMBEDDED_WORKER: "false"
+      ALLOW_SIGNUP: ${ALLOW_SIGNUP:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "npm run db:migrate && npm start"]
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+      APP_URL: ${APP_URL:?Set APP_URL to the public origin, e.g. https://flowforge.example.com}
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:?ENCRYPTION_KEY is required}
+      DATABASE_URL: postgres://workflow:${POSTGRES_PASSWORD:-workflow}@db:5432/workflow_os
+      XAI_API_KEY: ${XAI_API_KEY:-}
+      SEED_ON_BOOT: "false"
+      ENABLE_EMBEDDED_WORKER: "false"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["sh", "-c", "npm run db:migrate && npm run worker"]
 
 volumes:
-  workflow-data:
+  workflow-pg:

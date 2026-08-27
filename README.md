@@ -1,8 +1,8 @@
-# Workflow OS
+# FlowForge
 
-AI-native workflow automation for teams that need to see **what happened**, **why**, and **what to do next**.
+AI-native workflow automation and orchestration platform.
 
-Workflow OS is a visual builder plus a real execution engine. It is not a slideshow of fake nodes. Definitions, versions, runs, approvals, and secrets are persisted. A worker — not the HTTP request — executes queued work.
+FlowForge is a visual builder plus a real execution engine. It is not a slideshow of fake nodes. Definitions, versions, runs, approvals, and secrets are persisted. A worker — not the HTTP request — executes queued work.
 
 **Trigger → Process → Decide → Act → Verify**
 
@@ -10,7 +10,7 @@ Workflow OS is a visual builder plus a real execution engine. It is not a slides
 
 ## Why it exists
 
-Most automation tools are either too technical for operators or too opaque for people who have to approve what an AI is about to send. Workflow OS is built around:
+Most automation tools are either too technical for operators or too opaque for people who have to approve what an AI is about to send. FlowForge is built around:
 
 - A canvas that a non-technical user can follow
 - Typed node definitions a developer can extend
@@ -26,8 +26,8 @@ Most automation tools are either too technical for operators or too opaque for p
 | --- | --- |
 | App | Next.js 16 App Router, React 19, TypeScript (strict) |
 | UI | Tailwind 4, IBM Plex, Radix, React Flow |
-| Data | Drizzle ORM + libSQL / SQLite (Postgres-shaped schema) |
-| Execution | In-process worker + `npm run worker` |
+| Data | Drizzle ORM + libSQL / SQLite locally, PostgreSQL in production |
+| Execution | `npm run worker` (embedded poller in development only) |
 | AI | SpaceXAI (`XAI_API_KEY`, `https://api.x.ai/v1`, `grok-4.6`) with mock fallback |
 
 Frontend, domain, database, and execution are separated under `src/`. Adding a node type does not require rewriting the editor.
@@ -45,10 +45,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-Demo workspace (seeded on first boot):
+Local demo workspace (seeded on first boot in development):
 
 - Email: `maya.chen@northstar.example`
-- Password: `workflow-os-demo`
+- Password: `workflow-os-demo` (local default only; production uses `DEMO_PASSWORD`)
+
+Public demo setup: see [DEPLOYMENT.md](DEPLOYMENT.md).
 
 To talk to a live model instead of the mock provider:
 
@@ -73,9 +75,10 @@ See `.env.example`. Important values:
 | --- | --- |
 | `AUTH_SECRET` | Signs session cookies |
 | `ENCRYPTION_KEY` | AES-256-GCM for workspace secrets (falls back to `AUTH_SECRET`) |
-| `DATABASE_URL` | `file:./data/workflow-os.db` by default |
+| `DATABASE_URL` | `file:./data/workflow-os.db` locally; `postgres://...` in production |
 | `XAI_API_KEY` | Server-side only. Never sent to the browser |
-| `SEED_ON_BOOT` | Loads the Northstar Labs demo workspace when the DB is empty |
+| `DEMO_EMAIL` / `DEMO_PASSWORD` | Isolated demo account. Password is never shown in the UI |
+| `SEED_ON_BOOT` | Local only. Must not be enabled in production |
 
 ---
 
