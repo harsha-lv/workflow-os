@@ -11,8 +11,18 @@ export function isProduction(): boolean {
   return process.env.NODE_ENV === "production";
 }
 
+function envString(name: string): string | undefined {
+  const value = process.env[name]?.trim();
+  return value ? value : undefined;
+}
+
 export function databaseUrl(): string {
-  return process.env.DATABASE_URL ?? "file:./data/workflow-os.db";
+  return (
+    envString("DATABASE_URL") ||
+    envString("POSTGRES_URL") ||
+    envString("POSTGRES_PRISMA_URL") ||
+    "file:./data/workflow-os.db"
+  );
 }
 
 export function isPostgresUrl(url = databaseUrl()): boolean {

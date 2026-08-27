@@ -1,4 +1,6 @@
+import { cache } from "react";
 import { eq, and } from "drizzle-orm";
+import { connection } from "next/server";
 import { ensureMigrated } from "@/db/client";
 import { memberships, organizations, users } from "@/db/schema";
 import type { MembershipRole } from "@/domain/graph";
@@ -18,11 +20,13 @@ export type RequestContext = {
   role: MembershipRole;
 };
 
-export async function getContext(): Promise<RequestContext | null> {
-  await ensureMigrated();
-  await maybeSeed();
+export const getContext = cache(async (): Promise<RequestContext | null> => {
+  // Opt out of prerender before any filesystem/DB work. Vercel `next build`
+  // has no session and must not open SQLite or Postgres.
+  await connection();
   const session = await readSession();
   if (!session) return null;
+  await maybeSeed();
   const db = await ensureMigrated();
   const user = await db.query.users.findFirst({ where: eq(users.id, session.userId) });
   if (!user) return null;
@@ -54,7 +58,7 @@ export async function getContext(): Promise<RequestContext | null> {
     org: { id: org.id, name: org.name, slug: org.slug, plan: org.plan, isDemo: Boolean(org.isDemo) },
     role: membership.role as MembershipRole,
   };
-}
+});
 
 export async function requireContext(): Promise<RequestContext> {
   const ctx = await getContext();
