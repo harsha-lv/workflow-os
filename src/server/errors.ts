@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { unstable_rethrow } from "next/navigation";
 import {
   AuthenticationError,
   AuthorizationError,
@@ -9,6 +10,7 @@ import {
 } from "@/domain/permissions";
 
 export function toErrorResponse(error: unknown): NextResponse {
+  unstable_rethrow(error);
   if (
     error instanceof AuthenticationError ||
     error instanceof AuthorizationError ||

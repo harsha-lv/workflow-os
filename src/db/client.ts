@@ -3,6 +3,7 @@ import { drizzle as drizzleSqlite, type LibSQLDatabase } from "drizzle-orm/libsq
 import { drizzle as drizzlePg, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import postgres, { type Sql } from "postgres";
 import {
   databasePoolMax,
@@ -27,12 +28,23 @@ export function databaseUrl(): string {
 
 function ensureFileUrl(url: string): string {
   if (!url.startsWith("file:")) return url;
-  const raw = url.slice("file:".length);
-  const filePath = path.isAbsolute(raw)
-    ? raw
-    : path.join(/* turbopackIgnore: true */ process.cwd(), raw.replace(/^\.\//, ""));
+  const rest = url.slice("file:".length);
+  let filePath: string;
+  try {
+    if (rest.startsWith("//") || rest.startsWith("/")) {
+      filePath = fileURLToPath(rest.startsWith("//") ? url : `file://${rest}`);
+    } else if (path.isAbsolute(rest)) {
+      filePath = rest;
+    } else {
+      filePath = path.join(/* turbopackIgnore: true */ process.cwd(), rest.replace(/^\.\//, ""));
+    }
+  } catch {
+    filePath = path.isAbsolute(rest)
+      ? rest
+      : path.join(/* turbopackIgnore: true */ process.cwd(), rest.replace(/^\.\//, ""));
+  }
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  return `file:${filePath}`;
+  return pathToFileURL(filePath).href;
 }
 
 function asAppDb(db: Database | PgDatabase): Database {
@@ -41,6 +53,11 @@ function asAppDb(db: Database | PgDatabase): Database {
 
 export function getDb(): Database {
   const url = databaseUrl();
+  if (process.env.VERCEL && !isPostgresUrl(url)) {
+    throw new Error(
+      "On Vercel, DATABASE_URL must be a postgres:// or postgresql:// connection string. SQLite file databases are not supported. Set DATABASE_URL (or POSTGRES_URL) in the Vercel project environment variables.",
+    );
+  }
   if (isPostgresUrl(url)) {
     if (pgCache && pgCache.url === url) return asAppDb(pgCache.db);
     const sql = postgres(url, {
