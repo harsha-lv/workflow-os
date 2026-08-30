@@ -58,6 +58,15 @@ Never commit these values. Never prefix them with `NEXT_PUBLIC_`. API keys stay 
 | `DATABASE_POOL_MAX` | no | postgres.js pool size. Default `8`. |
 | `DATABASE_SSL` | no | `require` or `disable`. Hosted Postgres usually needs TLS. |
 | `COOKIE_SECURE` | no | Default `true` when `NODE_ENV=production`. Set `false` only for a temporary HTTP demo so the session cookie is stored. HTTPS is required for a real public demo. |
+| `BLOCKCHAIN_ENABLED` | no | Default `false`. Workflows run without a chain. |
+| `BLOCKCHAIN_MODE` | no | `demo` (default when enabled) or `evm` |
+| `CHAIN_RPC_URL` | evm only | JSON-RPC endpoint |
+| `CHAIN_ID` | evm only | Numeric chain id |
+| `CHAIN_CONTRACT_ADDRESS` | evm only | Deployed `ExecutionRegistry` |
+| `CHAIN_PRIVATE_KEY` | evm only | Server operator key. Never `NEXT_PUBLIC_`. |
+| `CHAIN_EXPLORER_URL` | no | Used to link transaction hashes |
+| `VERIFY_ON_CHAIN_DEFAULT` | no | Default for new workflows |
+| `VERIFY_TEST_RUNS` | no | Default false. Test executions are not anchored. |
 
 Copy `.env.example` and fill production values on the host. Do not put secrets in the client bundle.
 
@@ -229,6 +238,45 @@ docker compose exec web npm run seed:demo
 Compose starts Postgres, migrates, starts the web app, and starts `npm run worker` as a second service.
 
 ---
+
+## Blockchain verification (optional)
+
+FlowForge stores workflow data in PostgreSQL. Blockchain is used only to store a cryptographic proof that important execution records existed in a particular state and have not been altered. This is not a claim of regulatory compliance.
+
+Never stored on-chain: inputs, outputs, secrets, emails, or execution payloads. Only hashes and identifiers.
+
+### Demo mode
+
+```bash
+BLOCKCHAIN_ENABLED=true
+BLOCKCHAIN_MODE=demo
+```
+
+No RPC, wallet, or funds. Proofs are labeled **Demo verified**. Enable **Anchor successful production runs** on a workflow, run it, then open the run and **Verify integrity**. Public page: `/verify/{executionId}`.
+
+### Real EVM
+
+1. Deploy `contracts/ExecutionRegistry.sol` (Foundry example):
+
+```bash
+forge create contracts/ExecutionRegistry.sol:ExecutionRegistry \
+  --rpc-url "$CHAIN_RPC_URL" \
+  --private-key "$CHAIN_PRIVATE_KEY"
+```
+
+2. Set:
+
+```bash
+BLOCKCHAIN_ENABLED=true
+BLOCKCHAIN_MODE=evm
+CHAIN_RPC_URL=https://...
+CHAIN_ID=11155111
+CHAIN_CONTRACT_ADDRESS=0x...
+CHAIN_PRIVATE_KEY=0x...
+CHAIN_EXPLORER_URL=https://sepolia.etherscan.io
+```
+
+The worker (or inline runner in development) anchors after a terminal run. If anchoring fails, the workflow stays `success` or `failed` as the engine decided; the receipt is marked `failed` and can be retried.
 
 ## Local development
 

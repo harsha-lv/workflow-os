@@ -36,6 +36,7 @@ export default async function WorkflowEditorPage({
       initialTest={query.test === "1"}
       initialPublish={query.publish === "1"}
       initialSetup={Boolean(query.setup)}
+      verifyOnChain={Boolean(workflow.verifyOnChain)}
     />
   );
 }

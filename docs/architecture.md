@@ -26,3 +26,4 @@ Authorization is checked in `requirePermission` on the server. Frontend hiding i
 - Secrets are encrypted at rest and resolved only inside handlers.
 - AI calls go through `AIProvider`. SpaceXAI is the default live provider. Missing keys use a mock that labels its output `mocked: true`.
 - Execution is independent of the request that enqueued it. Local development may run a claimed execution inline; production enqueues and `npm run worker` claims the row.
+- After a run reaches a terminal status, the worker writes an append-only **execution receipt** (canonical SHA-256 root). Optional blockchain anchoring stores only that hash. The engine stays pure; chain I/O lives in `src/server`.

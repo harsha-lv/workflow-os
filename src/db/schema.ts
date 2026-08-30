@@ -17,6 +17,7 @@ export const workflowVersions = active().workflowVersions as SqliteSchema["workf
 export const workflowNodes = active().workflowNodes as SqliteSchema["workflowNodes"];
 export const workflowEdges = active().workflowEdges as SqliteSchema["workflowEdges"];
 export const executions = active().executions as SqliteSchema["executions"];
+export const executionReceipts = active().executionReceipts as SqliteSchema["executionReceipts"];
 export const executionSteps = active().executionSteps as SqliteSchema["executionSteps"];
 export const approvals = active().approvals as SqliteSchema["approvals"];
 export const integrations = active().integrations as SqliteSchema["integrations"];

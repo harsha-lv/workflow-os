@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, inArray } from "drizzle-orm";
 import { ensureMigrated } from "@/db/client";
-import { executions, workflows } from "@/db/schema";
+import { executionReceipts, executions, workflows } from "@/db/schema";
 import { requirePermission } from "@/server/context";
 import { EmptyState, PageHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,10 +26,24 @@ export default async function RunsPage({
   });
   const wfs = await db.query.workflows.findMany({ where: eq(workflows.organizationId, ctx.org.id) });
   const names = new Map(wfs.map((w) => [w.id, w.name]));
+  const receiptRows =
+    rows.length === 0
+      ? []
+      : await db.query.executionReceipts.findMany({
+          where: inArray(
+            executionReceipts.executionId,
+            rows.map((row) => row.id),
+          ),
+        });
+  const latestByExecution = new Map<string, (typeof receiptRows)[number]>();
+  for (const row of receiptRows) {
+    const current = latestByExecution.get(row.executionId);
+    if (!current || row.sequence > current.sequence) latestByExecution.set(row.executionId, row);
+  }
 
   return (
     <div className="mx-auto max-w-6xl">
-      <PageHeader title="Runs" description="Every execution is stored against the exact workflow version it used." />
+      <PageHeader title="Observatory" description="Every execution is stored against the exact workflow version it used." />
       {rows.length === 0 ? (
         <div className="mt-5">
           <EmptyState
@@ -51,6 +65,7 @@ export default async function RunsPage({
                 <th>Workflow</th>
                 <th>Trigger</th>
                 <th>Status</th>
+                <th>Proof</th>
                 <th>Duration</th>
                 <th>When</th>
               </tr>
@@ -70,6 +85,13 @@ export default async function RunsPage({
                   </td>
                   <td>
                     <StatusBadge status={run.status} />
+                  </td>
+                  <td>
+                    {latestByExecution.get(run.id) ? (
+                      <StatusBadge status={latestByExecution.get(run.id)!.status === "mocked" ? "demo" : latestByExecution.get(run.id)!.status} />
+                    ) : (
+                      <span className="text-faint">—</span>
+                    )}
                   </td>
                   <td className="tabular-nums text-muted">{formatDuration(run.durationMs)}</td>
                   <td className="whitespace-nowrap text-muted">{formatRelative(run.createdAt)}</td>

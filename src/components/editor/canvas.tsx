@@ -49,6 +49,7 @@ function toFlow(graph: WorkflowGraph, statuses: Record<string, string>): { nodes
         sourceHandle: edge.sourceHandle,
         targetHandle: edge.targetHandle,
         label: edge.label,
+        type: "smoothstep",
         className: cls,
         animated: cls === "wos-edge-flow",
       };
@@ -110,15 +111,25 @@ export function EditorCanvas() {
   );
 
   return (
-    <div className="h-full min-h-[420px] w-full bg-canvas">
+    <div className="relative h-full min-h-[420px] w-full bg-canvas">
+      {graph.nodes.length === 0 ? (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+          <div className="max-w-sm text-center">
+            <p className="text-[15px] font-medium tracking-tight">Empty canvas</p>
+            <p className="mt-2 text-[13px] text-muted">
+              Add a trigger from the palette, or describe the workflow with AI. Nothing runs until you test or publish.
+            </p>
+          </div>
+        </div>
+      ) : null}
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         defaultEdgeOptions={{
           className: "wos-edge-idle",
-          type: "default",
-          style: { stroke: "var(--edge)", strokeWidth: 1.5 },
+          type: "smoothstep",
+          style: { stroke: "var(--edge)", strokeWidth: 1.4 },
         }}
         connectionLineStyle={{ stroke: "var(--edge-active)", strokeWidth: 1.6 }}
         onNodesChange={(changes) => {
@@ -173,9 +184,9 @@ export function EditorCanvas() {
         deleteKeyCode={["Backspace", "Delete"]}
         proOptions={{ hideAttribution: true }}
       >
-        <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="var(--border)" />
-        <MiniMap pannable zoomable />
-        <Controls />
+        <Background variant={BackgroundVariant.Lines} gap={28} size={1} color="color-mix(in oklab, var(--border) 80%, transparent)" />
+        <MiniMap pannable zoomable maskColor="color-mix(in oklab, var(--bg) 72%, transparent)" />
+        <Controls showInteractive={false} />
       </ReactFlow>
     </div>
   );

@@ -47,7 +47,7 @@ export function EmptyState({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-start gap-3 rounded-[var(--radius)] border border-dashed border-border bg-surface px-5 py-8">
+    <div className="flex flex-col items-start gap-3 rounded-[var(--radius)] border border-border bg-surface/80 px-6 py-10">
       <div className="flex items-center gap-1.5" aria-hidden>
         <span className="size-2.5 rounded-[3px] border border-border bg-bg-elevated" />
         <span className="h-px w-4 bg-border" />

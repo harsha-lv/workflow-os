@@ -40,8 +40,8 @@ export default async function OnboardingPage() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-lg flex-col justify-center px-6">
-      <p className="text-xs uppercase tracking-[0.18em] text-accent">Getting started</p>
-      <h1 className="mt-3 text-3xl font-semibold tracking-tight">Build, run, and monitor intelligent workflows</h1>
+      <p className="text-[11px] font-medium uppercase tracking-[0.2em] text-accent">Getting started</p>
+      <h1 className="mt-3 text-4xl font-medium tracking-[-0.045em]">Build, run, and monitor intelligent workflows</h1>
       <p className="mt-2 text-sm text-muted">
         Workspace ready: {ctx.org.name}. Describe what you want, start from a template, or skip — you can come back.
       </p>

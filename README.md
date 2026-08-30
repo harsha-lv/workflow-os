@@ -32,6 +32,8 @@ Most automation tools are either too technical for operators or too opaque for p
 
 Frontend, domain, database, and execution are separated under `src/`. Adding a node type does not require rewriting the editor.
 
+FlowForge stores workflow data in PostgreSQL (SQLite locally). Blockchain is used only to store a cryptographic proof that important execution records existed in a particular state and have not been altered. It is not a regulatory-compliance feature.
+
 ---
 
 ## Local setup
@@ -79,6 +81,7 @@ See `.env.example`. Important values:
 | `XAI_API_KEY` | Server-side only. Never sent to the browser |
 | `DEMO_EMAIL` / `DEMO_PASSWORD` | Isolated demo account. Password is never shown in the UI |
 | `SEED_ON_BOOT` | Local only. Must not be enabled in production |
+| `BLOCKCHAIN_ENABLED` | Optional verification layer. Default `false`. Never required to run workflows |
 
 ---
 

@@ -169,6 +169,50 @@ export function encryptionKeyMaterial(): string {
   return raw || "dev-only-not-for-production";
 }
 
+export function blockchainEnabled(): boolean {
+  return process.env.BLOCKCHAIN_ENABLED === "true";
+}
+
+export function blockchainMode(): "demo" | "mock" | "evm" {
+  const raw = (process.env.BLOCKCHAIN_MODE ?? "demo").trim().toLowerCase();
+  if (raw === "evm" || raw === "live" || raw === "real") return "evm";
+  if (raw === "mock") return "mock";
+  return "demo";
+}
+
+export function chainRpcUrl(): string | null {
+  return process.env.CHAIN_RPC_URL?.trim() || null;
+}
+
+export function chainId(): string {
+  return process.env.CHAIN_ID?.trim() || (blockchainMode() === "evm" ? "" : "demo");
+}
+
+export function chainContractAddress(): `0x${string}` | null {
+  const raw = process.env.CHAIN_CONTRACT_ADDRESS?.trim();
+  return raw && raw.startsWith("0x") ? (raw as `0x${string}`) : null;
+}
+
+export function chainPrivateKey(): `0x${string}` | null {
+  const raw = process.env.CHAIN_PRIVATE_KEY?.trim();
+  if (!raw) return null;
+  const hex = raw.startsWith("0x") ? raw : `0x${raw}`;
+  return hex as `0x${string}`;
+}
+
+export function chainExplorerUrl(): string | null {
+  const raw = process.env.CHAIN_EXPLORER_URL?.trim();
+  return raw ? raw.replace(/\/$/, "") : null;
+}
+
+export function verifyOnChainDefault(): boolean {
+  return process.env.VERIFY_ON_CHAIN_DEFAULT === "true";
+}
+
+export function verifyTestRuns(): boolean {
+  return process.env.VERIFY_TEST_RUNS === "true";
+}
+
 export function assertProductionConfig(): void {
   if (!isProduction()) return;
   authSecret();
@@ -179,5 +223,12 @@ export function assertProductionConfig(): void {
   }
   if (process.env.SEED_ON_BOOT === "true") {
     throw new Error("SEED_ON_BOOT must not be enabled in production. Run `npm run seed:demo` once instead.");
+  }
+  if (blockchainEnabled() && blockchainMode() === "evm") {
+    if (!chainRpcUrl() || !chainId() || !chainContractAddress() || !chainPrivateKey()) {
+      throw new Error(
+        "Real EVM anchoring in production requires CHAIN_RPC_URL, CHAIN_ID, CHAIN_CONTRACT_ADDRESS, and CHAIN_PRIVATE_KEY.",
+      );
+    }
   }
 }

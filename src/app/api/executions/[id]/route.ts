@@ -5,6 +5,7 @@ import { executionSteps, executions } from "@/db/schema";
 import { requirePermission } from "@/server/context";
 import { toErrorResponse } from "@/server/errors";
 import { NotFoundError } from "@/domain/permissions";
+import { latestReceipt } from "@/server/services/receipts";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -18,6 +19,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const steps = await db.query.executionSteps.findMany({
       where: eq(executionSteps.executionId, run.id),
     });
+    const receipt = await latestReceipt(run.id, ctx.org.id);
     return NextResponse.json({
       id: run.id,
       status: run.status,
@@ -41,6 +43,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         logs: s.logs,
         error: s.error,
       })),
+      receipt: receipt
+        ? {
+            id: receipt.id,
+            sequence: receipt.sequence,
+            root: receipt.root,
+            status: receipt.status,
+            chainId: receipt.chainId,
+            txHash: receipt.txHash,
+            blockNumber: receipt.blockNumber,
+            createdAt: receipt.createdAt.toISOString(),
+          }
+        : null,
     });
   } catch (error) {
     return toErrorResponse(error);

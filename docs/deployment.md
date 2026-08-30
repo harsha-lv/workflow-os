@@ -12,3 +12,5 @@ Short version:
 6. `npm run worker` as a second process
 
 `SEED_ON_BOOT` must not be enabled in production. Webhook URLs use `APP_URL`, never localhost.
+
+Optional blockchain verification: see [DEPLOYMENT.md](../DEPLOYMENT.md#blockchain-verification-optional). Default is off.

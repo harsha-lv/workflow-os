@@ -5,21 +5,21 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--radius-sm)] text-sm font-medium select-none transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-[var(--duration-fast)] ease-[var(--ease)] active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50",
+  "relative inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[var(--radius-sm)] text-sm font-medium tracking-[-0.01em] select-none transition-[color,background-color,border-color,box-shadow,transform,opacity] duration-[var(--duration-fast)] ease-[var(--ease)] active:scale-[0.985] disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        primary: "btn-primary-sheen bg-accent text-accent-fg hover:bg-accent-hover",
-        secondary: "bg-surface text-text border border-border hover:bg-surface-hover hover:border-border-strong",
+        primary: "bg-accent text-accent-fg hover:bg-accent-hover shadow-[inset_0_1px_0_rgb(255_255_255_/_0.18)]",
+        secondary: "bg-transparent text-text border border-border hover:bg-surface-hover hover:border-border-strong",
         ghost: "text-muted hover:text-text hover:bg-surface-hover",
         danger: "bg-danger text-white hover:opacity-90",
         outline: "border border-border text-text hover:bg-surface-hover hover:border-border-strong",
       },
       size: {
-        sm: "h-7 px-2.5 text-[13px]",
-        md: "h-8 px-3 text-[13px]",
-        lg: "h-9 px-3.5",
-        icon: "size-7",
+        sm: "h-8 px-2.5 text-[13px]",
+        md: "h-9 px-3.5 text-[13px]",
+        lg: "h-10 px-4",
+        icon: "size-8",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },

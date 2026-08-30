@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["@libsql/client", "openai", "postgres"],
+  serverExternalPackages: ["@libsql/client", "openai", "postgres", "viem"],
   poweredByHeader: false,
   typedRoutes: false,
 };

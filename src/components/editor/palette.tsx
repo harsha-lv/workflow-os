@@ -7,7 +7,7 @@ import { useEditor } from "./store";
 export function NodePalette() {
   const addNode = useEditor((s) => s.addNode);
   return (
-    <aside className="hidden w-60 shrink-0 overflow-y-auto border-r border-border bg-bg-elevated p-2.5 lg:block">
+    <aside className="hidden w-60 shrink-0 overflow-y-auto border-r border-border bg-bg-elevated/80 p-3 backdrop-blur-xl lg:block">
       <p className="section-label px-1.5">Nodes</p>
       {nodeCategories.map((category) => (
         <div key={category.id} className="mt-3">

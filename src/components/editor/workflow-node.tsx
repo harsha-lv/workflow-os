@@ -17,7 +17,13 @@ export function WorkflowNode({ data, selected }: NodeProps) {
   return (
     <div
       className={cn(
-        "wos-node min-w-[228px] rounded-[8px] border px-3 py-2.5",
+        "wos-node min-w-[236px] rounded-[6px] border px-3 py-2.5",
+        def?.category === "trigger" && "is-trigger",
+        def?.category === "ai" && "is-ai",
+        def?.category === "logic" && "is-logic",
+        def?.category === "human" && "is-human",
+        def?.category === "communication" && "is-communication",
+        def?.category === "output" && "is-output",
         selected && "is-selected",
         status === "error" || status === "failed" ? "is-error" : null,
         status === "success" && "is-success",

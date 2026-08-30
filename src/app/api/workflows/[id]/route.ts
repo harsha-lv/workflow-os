@@ -2,18 +2,21 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requirePermission } from "@/server/context";
 import { toErrorResponse } from "@/server/errors";
-import { getWorkflow, saveDraft, deleteWorkflow } from "@/server/services/workflows";
+import { getWorkflow, saveDraft, deleteWorkflow, setWorkflowVerifyOnChain } from "@/server/services/workflows";
 
 const patchSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  graph: z.object({
-    nodes: z.array(z.any()),
-    edges: z.array(z.any()),
-    viewport: z
-      .object({ x: z.number(), y: z.number(), zoom: z.number() })
-      .optional(),
-  }),
+  verifyOnChain: z.boolean().optional(),
+  graph: z
+    .object({
+      nodes: z.array(z.any()),
+      edges: z.array(z.any()),
+      viewport: z
+        .object({ x: z.number(), y: z.number(), zoom: z.number() })
+        .optional(),
+    })
+    .optional(),
 });
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -32,14 +35,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const ctx = await requirePermission("workflows.write");
     const { id } = await params;
     const body = patchSchema.parse(await request.json());
-    await saveDraft({
-      orgId: ctx.org.id,
-      userId: ctx.user.id,
-      workflowId: id,
-      name: body.name,
-      description: body.description,
-      graph: body.graph,
-    });
+    if (body.verifyOnChain !== undefined) {
+      await setWorkflowVerifyOnChain(ctx.org.id, ctx.user.id, id, body.verifyOnChain);
+    }
+    if (body.graph) {
+      await saveDraft({
+        orgId: ctx.org.id,
+        userId: ctx.user.id,
+        workflowId: id,
+        name: body.name,
+        description: body.description,
+        graph: body.graph,
+      });
+    }
     return NextResponse.json({ ok: true });
   } catch (error) {
     if (error instanceof z.ZodError) {

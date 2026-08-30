@@ -20,7 +20,7 @@ export function ConfigPanel({ onTest }: { onTest?: () => void }) {
   const node = graph.nodes.find((n) => n.id === selected[0]);
   if (!node) {
     return (
-      <aside className="hidden w-[340px] shrink-0 overflow-y-auto border-l border-border bg-bg-elevated p-4 lg:block">
+      <aside className="hidden w-[340px] shrink-0 overflow-y-auto border-l border-border bg-bg-elevated/80 p-4 backdrop-blur-xl lg:block">
         <p className="text-sm font-medium">Inspector</p>
         <p className="mt-2 text-sm text-muted">
           Select a node to configure it. Type <span className="font-mono text-text">{"{{node.field}}"}</span> to
@@ -51,7 +51,7 @@ export function ConfigPanel({ onTest }: { onTest?: () => void }) {
   }
 
   return (
-    <aside className="fixed inset-x-0 bottom-0 z-20 max-h-[55vh] overflow-y-auto border-t border-border bg-bg-elevated p-4 max-lg:animate-[slide-in-up_var(--duration)_var(--ease)] lg:static lg:z-0 lg:h-auto lg:max-h-none lg:w-[340px] lg:shrink-0 lg:border-l lg:border-t-0 lg:animate-[slide-in-right_var(--duration)_var(--ease)]">
+    <aside className="fixed inset-x-0 bottom-0 z-20 max-h-[55vh] overflow-y-auto border-t border-border bg-bg-elevated/90 p-4 backdrop-blur-xl max-lg:animate-[slide-in-up_var(--duration)_var(--ease)] lg:static lg:z-0 lg:h-auto lg:max-h-none lg:w-[340px] lg:shrink-0 lg:border-l lg:border-t-0 lg:animate-[slide-in-right_var(--duration)_var(--ease)]">
       <p className="text-xs uppercase tracking-wide text-faint">{def?.category}</p>
       <Field label="Name">
         <Input value={node.name} onChange={(e) => updateNode(node.id, { name: e.target.value })} />

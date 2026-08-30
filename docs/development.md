@@ -18,3 +18,5 @@ Useful scripts:
 The canvas is desktop-first. Mobile still reaches runs, approvals, settings, and node inspection via the bottom sheet inspector.
 
 Do not run the Next.js dev server as the production worker. Use `npm run worker` or a future queue consumer.
+
+Blockchain verification is off by default (`BLOCKCHAIN_ENABLED=false`). Demo mode (`BLOCKCHAIN_MODE=demo`) produces a labeled mock proof without RPC, wallets, or funds. Real EVM mode needs `CHAIN_RPC_URL`, `CHAIN_ID`, `CHAIN_CONTRACT_ADDRESS`, and `CHAIN_PRIVATE_KEY` on the **server** only.

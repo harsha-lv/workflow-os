@@ -20,6 +20,7 @@ import { ExplainPanel } from "./explain-panel";
 import { SetupGuide } from "./setup-guide";
 import { suggestWorkflow } from "@/domain/workflow/suggestions";
 import type { WorkflowStats } from "@/domain/workflow/stats";
+import { VerifyOnChainToggle } from "./verify-toggle";
 
 
 export function EditorShell({
@@ -33,6 +34,7 @@ export function EditorShell({
   initialTest = false,
   initialPublish = false,
   initialSetup = false,
+  verifyOnChain = false,
 }: {
   workflowId: string;
   name: string;
@@ -44,6 +46,7 @@ export function EditorShell({
   initialTest?: boolean;
   initialPublish?: boolean;
   initialSetup?: boolean;
+  verifyOnChain?: boolean;
 }) {
   const hydrate = useEditor((s) => s.hydrate);
   const editorName = useEditor((s) => s.name);
@@ -206,8 +209,8 @@ export function EditorShell({
 
   return (
     <LiveRunContext.Provider value={statuses}>
-      <div className="flex h-[calc(100vh-2.75rem)] flex-col">
-        <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border bg-bg-elevated px-3">
+      <div className="flex h-[calc(100vh-3rem)] flex-col">
+        <div className="flex h-12 shrink-0 items-center gap-2 border-b border-border bg-bg-elevated/80 px-3 backdrop-blur-xl">
           <Input value={editorName} onChange={(e) => setName(e.target.value)} className="h-7 max-w-xs border-transparent bg-transparent px-1.5 hover:border-border" />
           <p className="hidden text-[11px] text-faint sm:block" aria-live="polite">
             {saving ? "Saving" : dirty ? "Unsaved" : lastSavedAt ? "Saved" : "Up to date"}
@@ -221,7 +224,7 @@ export function EditorShell({
               Build with AI
             </Button>
             <Button variant="ghost" size="sm" onClick={() => void explain()}>
-              ✨ Explain
+              Explain
             </Button>
             <Button variant="ghost" size="sm" onClick={undo} title="Undo ⌘Z">
               Undo
@@ -259,6 +262,9 @@ export function EditorShell({
             </button>
           </div>
         ) : null}
+        <div className="border-b border-border bg-bg-elevated px-3 py-2">
+          <VerifyOnChainToggle workflowId={workflowId} initial={verifyOnChain} />
+        </div>
         <SetupGuide
           open={setupOpen}
           onTest={() => setTestOpen(true)}

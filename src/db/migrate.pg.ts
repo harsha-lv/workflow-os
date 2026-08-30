@@ -55,6 +55,7 @@ export const PG_STATEMENTS = [
     status TEXT NOT NULL DEFAULT 'draft',
     published_version_id TEXT,
     webhook_token TEXT,
+    verify_on_chain BOOLEAN NOT NULL DEFAULT FALSE,
     created_by TEXT NOT NULL REFERENCES users(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -122,6 +123,25 @@ export const PG_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS executions_workflow_idx ON executions(workflow_id)`,
   `CREATE INDEX IF NOT EXISTS executions_status_idx ON executions(status)`,
   `CREATE INDEX IF NOT EXISTS executions_wait_idx ON executions(status, wait_until)`,
+  `CREATE TABLE IF NOT EXISTS execution_receipts (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    execution_id TEXT NOT NULL REFERENCES executions(id) ON DELETE CASCADE,
+    sequence INTEGER NOT NULL,
+    root TEXT NOT NULL,
+    payload_json JSONB NOT NULL,
+    chain_id TEXT,
+    tx_hash TEXT,
+    block_number TEXT,
+    contract_address TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    verified_at TIMESTAMPTZ
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS execution_receipts_exec_seq_idx ON execution_receipts(execution_id, sequence)`,
+  `CREATE INDEX IF NOT EXISTS execution_receipts_org_idx ON execution_receipts(organization_id)`,
+  `CREATE INDEX IF NOT EXISTS execution_receipts_exec_idx ON execution_receipts(execution_id)`,
+  `CREATE INDEX IF NOT EXISTS execution_receipts_status_idx ON execution_receipts(status)`,
   `CREATE TABLE IF NOT EXISTS execution_steps (
     id TEXT PRIMARY KEY,
     execution_id TEXT NOT NULL REFERENCES executions(id) ON DELETE CASCADE,
@@ -216,6 +236,7 @@ export const PG_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS usage_org_kind_idx ON usage_events(organization_id, kind)`,
   `CREATE INDEX IF NOT EXISTS usage_org_created_idx ON usage_events(organization_id, created_at)`,
   `ALTER TABLE organizations ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE`,
+  `ALTER TABLE workflows ADD COLUMN IF NOT EXISTS verify_on_chain BOOLEAN NOT NULL DEFAULT FALSE`,
 ];
 
 export async function applyPgSchema(sql: Sql): Promise<void> {
@@ -224,5 +245,8 @@ export async function applyPgSchema(sql: Sql): Promise<void> {
   }
   await sql.unsafe(
     `INSERT INTO schema_migrations (id) VALUES ('0000_init') ON CONFLICT (id) DO NOTHING`,
+  );
+  await sql.unsafe(
+    `INSERT INTO schema_migrations (id) VALUES ('0001_execution_receipts') ON CONFLICT (id) DO NOTHING`,
   );
 }

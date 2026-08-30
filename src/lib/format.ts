@@ -27,6 +27,14 @@ export function formatNumber(value: number): string {
   return new Intl.NumberFormat("en-US").format(value);
 }
 
+export function shortHash(value: string | null | undefined, chars = 8): string {
+  if (!value) return "—";
+  const hex = value.startsWith("0x") ? value.slice(2) : value;
+  if (hex.length <= chars * 2) return value;
+  const prefix = value.startsWith("0x") ? "0x" : "";
+  return `${prefix}${hex.slice(0, chars)}…${hex.slice(-chars)}`;
+}
+
 export function initials(name: string): string {
   const parts = name.trim().split(/\s+/).slice(0, 2);
   return parts.map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";

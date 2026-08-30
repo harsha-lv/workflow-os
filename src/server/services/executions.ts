@@ -251,6 +251,15 @@ export async function runPersistedExecution(executionId: string): Promise<void> 
       lockedBy: null,
     })
     .where(eq(executions.id, execution.id));
+
+  if (result.status !== "waiting") {
+    try {
+      const { createReceiptForExecution } = await import("@/server/services/receipts");
+      await createReceiptForExecution(execution.id);
+    } catch (error) {
+      console.error("[receipts]", error);
+    }
+  }
 }
 
 export async function decideApproval(input: {

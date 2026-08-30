@@ -8,6 +8,8 @@ import { PageHeader } from "@/components/ui/card";
 import { formatDateTime, formatDuration } from "@/lib/format";
 import { ExecutionInspector } from "@/components/execution/inspector";
 import { explainFailure } from "@/domain/ops/failure";
+import { latestReceipt } from "@/server/services/receipts";
+import { VerificationPanel } from "@/components/verify/panel";
 
 export default async function RunDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const ctx = await requirePermission("executions.read");
@@ -22,6 +24,7 @@ export default async function RunDetailPage({ params }: { params: Promise<{ id: 
   const version = await db.query.workflowVersions.findFirst({
     where: eq(workflowVersions.id, run.workflowVersionId),
   });
+  const receipt = await latestReceipt(run.id, ctx.org.id);
   const failedStep = steps.find((s) => s.nodeId === run.error?.nodeId);
   const brief = run.error
     ? explainFailure({ error: run.error, nodeName: failedStep?.name, nodeType: failedStep?.nodeType })
@@ -31,7 +34,7 @@ export default async function RunDetailPage({ params }: { params: Promise<{ id: 
     <div className="mx-auto max-w-6xl">
       <PageHeader
         title={workflow?.name ?? "Execution"}
-        description={`${run.triggerType} · ${formatDateTime(run.createdAt)} · ${formatDuration(run.durationMs)}`}
+        description={`${run.triggerType} · version locked · ${formatDateTime(run.createdAt)} · ${formatDuration(run.durationMs)}`}
         actions={<StatusBadge status={run.status} />}
       />
       {run.error && brief ? (
@@ -49,6 +52,25 @@ export default async function RunDetailPage({ params }: { params: Promise<{ id: 
           </details>
         </div>
       ) : null}
+      <VerificationPanel
+        executionId={run.id}
+        receipt={
+          receipt
+            ? {
+                id: receipt.id,
+                sequence: receipt.sequence,
+                root: receipt.root,
+                status: receipt.status,
+                chainId: receipt.chainId,
+                txHash: receipt.txHash,
+                blockNumber: receipt.blockNumber,
+                contractAddress: receipt.contractAddress,
+                createdAt: receipt.createdAt.toISOString(),
+                verifiedAt: receipt.verifiedAt?.toISOString() ?? null,
+              }
+            : null
+        }
+      />
       <ExecutionInspector
         graph={version?.definition.graph ?? { nodes: [], edges: [] }}
         steps={steps.map((s) => ({

@@ -24,6 +24,7 @@ export const prefixes = {
   usage: "usg",
   session: "ses",
   webhook: "whk",
+  receipt: "rcp",
 } as const;
 
 export function id(prefix: keyof typeof prefixes): string {

@@ -26,6 +26,7 @@ import { SystemStatus } from "@/components/layout/system-status";
 import { cn } from "@/lib/utils";
 import { initials } from "@/lib/format";
 import { SIDEBAR_STORAGE_KEY } from "@/lib/theme";
+import { BrandMark } from "@/components/layout/brand-mark";
 
 const NAV = [
   {
@@ -110,19 +111,20 @@ export function AppShell({
         ) : null}
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-40 flex-col border-r border-border bg-bg-elevated px-2.5 py-3 md:static md:flex",
+            "fixed inset-y-0 left-0 z-40 flex-col border-r border-border bg-bg-elevated/80 px-2.5 py-4 backdrop-blur-xl md:static md:flex",
             collapsed ? "w-[var(--sidebar-collapsed)]" : "w-[var(--sidebar)]",
             "transition-[width,transform] duration-[var(--duration)] ease-[var(--ease)]",
             menu ? "flex" : "hidden md:flex",
           )}
           suppressHydrationWarning
         >
-          <div className={cn("flex h-8 items-center", collapsed ? "justify-center" : "justify-between px-1.5")}>
+          <div className={cn("flex h-9 items-center", collapsed ? "justify-center" : "justify-between px-1.5")}>
             <Link
               href="/dashboard"
-              className={cn("truncate text-[13px] font-semibold tracking-tight", collapsed && "sr-only")}
+              className={cn("flex items-center gap-2 truncate text-[13px] font-medium tracking-tight", collapsed && "justify-center")}
             >
-              FlowForge
+              <BrandMark className="size-4 shrink-0 text-accent" />
+              {collapsed ? <span className="sr-only">FlowForge</span> : "FlowForge"}
             </Link>
             <Button
               variant="ghost"
@@ -176,7 +178,7 @@ export function AppShell({
               <ThemeToggle />
             </div>
             <div className={cn("flex items-center gap-2 rounded-md py-1.5", collapsed ? "justify-center px-0" : "px-1.5")}>
-              <div className="flex size-6 items-center justify-center rounded-full bg-accent/15 text-[10px] font-medium text-accent">
+              <div className="flex size-7 items-center justify-center rounded-full border border-border bg-surface text-[10px] font-medium text-text">
                 {initials(userName)}
               </div>
               {collapsed ? null : (
@@ -202,7 +204,7 @@ export function AppShell({
           </div>
         </aside>
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 flex h-11 items-center gap-2 border-b border-border bg-bg/80 px-3 backdrop-blur md:px-5">
+          <header className="sticky top-0 z-30 flex h-12 items-center gap-2 border-b border-border bg-bg/55 px-3 backdrop-blur-xl md:px-6">
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMenu((v) => !v)} aria-label="Open navigation">
               <Menu className="size-4" />
             </Button>

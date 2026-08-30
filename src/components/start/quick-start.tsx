@@ -5,7 +5,7 @@ import { START_EXAMPLES } from "@/domain/start-examples";
 
 export function QuickStart({ empty }: { empty: boolean }) {
   return (
-    <section className="panel mt-5 p-5">
+    <section className="panel mt-6 p-6 md:p-7">
       <SectionLabel>{empty ? "Let's build your first workflow" : "What do you want to automate?"}</SectionLabel>
       <p className="mt-2 max-w-2xl text-[13px] text-muted">
         {empty

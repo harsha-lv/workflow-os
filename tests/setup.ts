@@ -4,3 +4,4 @@ process.env.DATABASE_URL ??= "file:./data/workflow-os-test.db";
 process.env.SEED_ON_BOOT = "false";
 process.env.APP_URL ??= "http://localhost:3000";
 process.env.XAI_API_KEY = "";
+process.env.BLOCKCHAIN_ENABLED ??= "false";

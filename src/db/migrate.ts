@@ -51,6 +51,7 @@ const STATEMENTS = [
     status TEXT NOT NULL DEFAULT 'draft',
     published_version_id TEXT,
     webhook_token TEXT,
+    verify_on_chain INTEGER NOT NULL DEFAULT 0,
     created_by TEXT NOT NULL REFERENCES users(id),
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
@@ -118,6 +119,25 @@ const STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS executions_workflow_idx ON executions(workflow_id)`,
   `CREATE INDEX IF NOT EXISTS executions_status_idx ON executions(status)`,
   `CREATE INDEX IF NOT EXISTS executions_wait_idx ON executions(status, wait_until)`,
+  `CREATE TABLE IF NOT EXISTS execution_receipts (
+    id TEXT PRIMARY KEY,
+    organization_id TEXT NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+    execution_id TEXT NOT NULL REFERENCES executions(id) ON DELETE CASCADE,
+    sequence INTEGER NOT NULL,
+    root TEXT NOT NULL,
+    payload_json TEXT NOT NULL,
+    chain_id TEXT,
+    tx_hash TEXT,
+    block_number TEXT,
+    contract_address TEXT,
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at INTEGER NOT NULL,
+    verified_at INTEGER
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS execution_receipts_exec_seq_idx ON execution_receipts(execution_id, sequence)`,
+  `CREATE INDEX IF NOT EXISTS execution_receipts_org_idx ON execution_receipts(organization_id)`,
+  `CREATE INDEX IF NOT EXISTS execution_receipts_exec_idx ON execution_receipts(execution_id)`,
+  `CREATE INDEX IF NOT EXISTS execution_receipts_status_idx ON execution_receipts(status)`,
   `CREATE TABLE IF NOT EXISTS execution_steps (
     id TEXT PRIMARY KEY,
     execution_id TEXT NOT NULL REFERENCES executions(id) ON DELETE CASCADE,
@@ -221,6 +241,13 @@ export async function applySchema(client: Client): Promise<void> {
   try {
     await client.execute(
       "ALTER TABLE organizations ADD COLUMN is_demo INTEGER NOT NULL DEFAULT 0",
+    );
+  } catch {
+    // Column already exists on databases created after this patch.
+  }
+  try {
+    await client.execute(
+      "ALTER TABLE workflows ADD COLUMN verify_on_chain INTEGER NOT NULL DEFAULT 0",
     );
   } catch {
     // Column already exists on databases created after this patch.

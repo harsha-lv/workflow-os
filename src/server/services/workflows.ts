@@ -15,6 +15,7 @@ import { hashDefinition } from "@/server/hash";
 import { writeAudit } from "@/server/audit";
 import { randomToken } from "@/server/crypto";
 import { templateLibrary } from "@/domain/templates/library";
+import { verifyOnChainDefault } from "@/server/config";
 
 export async function listWorkflows(orgId: string) {
   const db = await ensureMigrated();
@@ -49,6 +50,7 @@ export async function createWorkflow(input: {
   description?: string;
   templateSlug?: string;
   graph?: WorkflowGraph;
+  verifyOnChain?: boolean;
 }) {
   const db = await ensureMigrated();
   let projectId = input.projectId;
@@ -76,6 +78,7 @@ export async function createWorkflow(input: {
     description,
     status: "draft",
     webhookToken: randomToken(18),
+    verifyOnChain: input.verifyOnChain ?? verifyOnChainDefault(),
     createdBy: input.userId,
   });
   await db.insert(workflowVersions).values({
@@ -186,6 +189,28 @@ export async function cloneWorkflow(orgId: string, userId: string, workflowId: s
     name: `${workflow.name} — Copy`,
     description: workflow.description,
     graph: draft?.definition.graph,
+  });
+}
+
+export async function setWorkflowVerifyOnChain(
+  orgId: string,
+  userId: string,
+  workflowId: string,
+  verifyOnChain: boolean,
+) {
+  const db = await ensureMigrated();
+  const { workflow } = await getWorkflow(orgId, workflowId);
+  await db
+    .update(workflows)
+    .set({ verifyOnChain, updatedAt: new Date() })
+    .where(eq(workflows.id, workflow.id));
+  await writeAudit({
+    organizationId: orgId,
+    userId,
+    action: "workflow.verify_on_chain",
+    resourceType: "workflow",
+    resourceId: workflow.id,
+    metadata: { verifyOnChain },
   });
 }
 

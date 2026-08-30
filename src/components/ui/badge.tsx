@@ -29,13 +29,13 @@ export function Badge({
 
 export function StatusBadge({ status }: { status: string }) {
   const tone =
-    status === "success" || status === "published" || status === "approved" || status === "connected"
+    status === "success" || status === "published" || status === "approved" || status === "connected" || status === "confirmed"
       ? "success"
       : status === "failed" || status === "rejected" || status === "error"
         ? "danger"
-        : status === "running" || status === "queued"
+        : status === "running" || status === "queued" || status === "demo"
           ? "info"
-          : status === "waiting" || status === "draft" || status === "warning"
+          : status === "waiting" || status === "draft" || status === "warning" || status === "pending" || status === "mocked"
             ? "warning"
             : "neutral";
   const live = status === "running" || status === "queued" || status === "waiting";

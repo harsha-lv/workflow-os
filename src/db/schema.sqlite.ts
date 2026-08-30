@@ -96,6 +96,7 @@ export const workflows = sqliteTable(
     status: text("status").notNull().default("draft"),
     publishedVersionId: text("published_version_id"),
     webhookToken: text("webhook_token"),
+    verifyOnChain: integer("verify_on_chain", { mode: "boolean" }).notNull().default(false),
     createdBy: text("created_by")
       .notNull()
       .references(() => users.id),
@@ -237,6 +238,35 @@ export const executions = sqliteTable(
     index("executions_workflow_idx").on(t.workflowId),
     index("executions_status_idx").on(t.status),
     index("executions_wait_idx").on(t.status, t.waitUntil),
+  ],
+);
+
+export const executionReceipts = sqliteTable(
+  "execution_receipts",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organizations.id, { onDelete: "cascade" }),
+    executionId: text("execution_id")
+      .notNull()
+      .references(() => executions.id, { onDelete: "cascade" }),
+    sequence: integer("sequence").notNull(),
+    root: text("root").notNull(),
+    payloadJson: text("payload_json", { mode: "json" }).notNull().$type<Record<string, unknown>>(),
+    chainId: text("chain_id"),
+    txHash: text("tx_hash"),
+    blockNumber: text("block_number"),
+    contractAddress: text("contract_address"),
+    status: text("status").notNull().default("pending"),
+    createdAt: timestamp("created_at"),
+    verifiedAt: timestampNull("verified_at"),
+  },
+  (t) => [
+    uniqueIndex("execution_receipts_exec_seq_idx").on(t.executionId, t.sequence),
+    index("execution_receipts_org_idx").on(t.organizationId),
+    index("execution_receipts_exec_idx").on(t.executionId),
+    index("execution_receipts_status_idx").on(t.status),
   ],
 );
 
@@ -428,6 +458,7 @@ export const schema = {
   workflowNodes,
   workflowEdges,
   executions,
+  executionReceipts,
   executionSteps,
   approvals,
   integrations,
