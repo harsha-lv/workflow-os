@@ -1,29 +1,28 @@
-# Architecture
+# FlowForge Architecture
 
-FlowForge is a single Next.js application with a hard internal split:
+FlowForge is a full-stack workflow automation platform.
 
-```
-src/
-  app/          HTTP + pages
-  components/   UI
-  domain/       pure logic (nodes, engine, expressions, authz, billing)
-  db/           SQLite + PostgreSQL schema and migrations
-  server/       sessions, services, worker, seed
-```
+## Core Components
 
-The browser never talks to the engine directly. It mutates a **workflow definition**. Publishing snapshots an immutable **version**. Running creates an **execution** row with status `queued`. A worker claims it.
+- Next.js application for the web interface
+- TypeScript application logic
+- Visual workflow builder
+- Workflow execution engine
+- PostgreSQL/Supabase production database
+- SQLite support for local development
+- Authentication and user management
+- Organizations and projects
+- Workflow versions and execution history
+- Approvals and integrations
+- Secrets management
+- Audit logging
+- Execution receipts
 
-## Tenancy
+## Execution Flow
 
-`User → Membership(role) → Organization → Project → Workflow → Version → Execution`
-
-Authorization is checked in `requirePermission` on the server. Frontend hiding is not a security boundary.
-
-## Design principles in code
-
-- Node types live in a registry (`src/domain/nodes`). The editor imports definitions; the engine imports handlers.
-- Expressions are parsed and evaluated without `eval` or `Function`.
-- Secrets are encrypted at rest and resolved only inside handlers.
-- AI calls go through `AIProvider`. SpaceXAI is the default live provider. Missing keys use a mock that labels its output `mocked: true`.
-- Execution is independent of the request that enqueued it. Local development may run a claimed execution inline; production enqueues and `npm run worker` claims the row.
-- After a run reaches a terminal status, the worker writes an append-only **execution receipt** (canonical SHA-256 root). Optional blockchain anchoring stores only that hash. The engine stays pure; chain I/O lives in `src/server`.
+1. User creates a workflow.
+2. The workflow is stored as a versioned graph.
+3. The execution engine processes the workflow.
+4. Individual execution steps are recorded.
+5. The execution result is stored as a receipt.
+6. Eligible executions can be verified using the blockchain layer.
