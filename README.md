@@ -10,7 +10,7 @@ FlowForge is a visual builder plus a real execution engine. It is not a slidesho
 
 ## Why it exists
 
-Most automation tools are either too technical for operators or too opaque for people who have to approve what an AI is about to send. FlowForge is built around:
+Most automation tools are either too technical for operators or too opaque(hard to understand) for people who have to approve what an AI is about to send. FlowForge is built around:
 
 - A canvas that a non-technical user can follow
 - Typed node definitions a developer can extend
